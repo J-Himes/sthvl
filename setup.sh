@@ -6,7 +6,7 @@ conda activate sthvl
 pip install torch==1.10.2
 pip install git+https://github.com/Maluuba/nlg-eval.git@master
 
-ln -s /srv/share/datasets/avsd data
-ln -s /srv/essa-lab/share3/avsd/ckpts ckpts
-ln -s /srv/essa-lab/share3/avsd/modules/bert-base-uncased modules/bert-base-uncased
-ln -s /srv/essa-lab/share3/avsd/weight weight 
+ln -s /coc/dataset/sthvl data
+ln -s /coc/pskynet3/sthvl/ckpts ckpts
+ln -s /coc/pskynet3/sthvl/modules/bert-base-uncased modules/bert-base-uncased
+ln -s /coc/pskynet3/sthvl/weights weights
