@@ -1,5 +1,4 @@
 # Test runs on 4 GPUs
-conda activate sthvl
 
 DATATYPE="msrvtt"
 TRAIN_CSV="data/msrvtt/MSRVTT_train.9k.csv"
@@ -8,6 +7,9 @@ DATA_PATH="data/msrvtt/MSRVTT_data.json"
 FEATURES_PATH="data/msrvtt/msrvtt_videos_features.pickle"
 INIT_MODEL="weight/univl.pretrained.bin"
 OUTPUT_ROOT="ckpts"
+
+source ~/.bashrc
+conda activate sthvl
 
 python -m torch.distributed.launch --nproc_per_node=4 \
 main_task_caption.py \
