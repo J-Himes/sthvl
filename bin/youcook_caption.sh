@@ -1,4 +1,5 @@
 # Test runs on 4 GPUs
+conda activate sthvl
 
 TRAIN_CSV="data/youcookii/youcookii_train.csv"
 VAL_CSV="data/youcookii/youcookii_val.csv"
