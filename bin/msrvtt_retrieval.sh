@@ -1,4 +1,5 @@
 # Test runs on 4 GPUs
+conda activate sthvl
 
 DATATYPE="msrvtt"
 TRAIN_CSV="data/msrvtt/MSRVTT_train.9k.csv"
