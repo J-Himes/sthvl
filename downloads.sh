@@ -12,3 +12,5 @@ unzip youcookii.zip
 wget https://github.com/microsoft/UniVL/releases/download/v0/msrvtt.zip
 unzip msrvtt.zip
 cd ..
+
+wget -P ./weight https://github.com/microsoft/UniVL/releases/download/v0/univl.pretrained.bin
