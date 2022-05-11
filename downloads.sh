@@ -1,5 +1,16 @@
 # Make sure to run this file inside your project's main directory.
 
+# Downloads the Bert Model
+
+mkdir modules/bert-base-uncased
+cd modules/bert-base-uncased/
+wget https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
+mv bert-base-uncased-vocab.txt vocab.txt
+wget https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased.tar.gz
+tar -xvf bert-base-uncased.tar.gz
+rm bert-base-uncased.tar.gz
+cd ../../
+
 # Downloads the YouCookII Dataset
 
 mkdir -p data
