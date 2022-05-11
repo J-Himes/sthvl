@@ -1,4 +1,4 @@
-# Make sure to run this file at the top level directory of your project
+# Make sure to run this file inside your project's main directory.
 
 # Downloads the YouCookII Dataset
 
