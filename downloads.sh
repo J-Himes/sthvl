@@ -13,4 +13,5 @@ wget https://github.com/microsoft/UniVL/releases/download/v0/msrvtt.zip
 unzip msrvtt.zip
 cd ..
 
+# Downloads the Weights
 wget -P ./weight https://github.com/microsoft/UniVL/releases/download/v0/univl.pretrained.bin
