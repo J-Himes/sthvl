@@ -1,5 +1,6 @@
 # Make sure to run this file at the top level directory of your project
 
+conda init bash
 source ~/.bashrc
 conda create -n sthvl python=3.6.9 tqdm boto3 requests pandas
 source ~/.bashrc
