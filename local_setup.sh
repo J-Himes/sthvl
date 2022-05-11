@@ -10,4 +10,3 @@ pip install git+https://github.com/Maluuba/nlg-eval.git@master
 
 mkdir -p ./ckpts
 mkdir -p ./weight
-wget -P ./weight https://github.com/microsoft/UniVL/releases/download/v0/univl.pretrained.bin
