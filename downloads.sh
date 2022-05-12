@@ -1,5 +1,8 @@
 # Make sure to run this file inside your project's main directory.
 
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate sthvl
+
 # Downloads the Bert Model
 
 mkdir modules/bert-base-uncased
