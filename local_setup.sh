@@ -6,8 +6,8 @@ source ~/.bashrc
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate sthvl
 
-pip install torch==1.10.1 --yes
-pip install git+https://github.com/Maluuba/nlg-eval.git@master --yes
+yes | pip install torch==1.10.1
+yes | pip install git+https://github.com/Maluuba/nlg-eval.git@master
 
 mkdir -p ./ckpts
 mkdir -p ./weight
