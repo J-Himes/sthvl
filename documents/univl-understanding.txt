@@ -1,0 +1,15 @@
+1) Where is the cross encoder initialized?
+2) Where in the code can you find the structure of the visual transformer?
+3) Where is the loss function (any loss function)?
+4) Where is the data initialized?
+5) Where are the train epoch and eval epoch located, and what are they doing
+   on a high level
+6) Where is text processing/masking taking place? What is it doing exactly?
+7) Get familiar with dataloaders.
+8) What do batches consist of?
+9) How are the encoders/decoders configured? (e.g. how do I change vocab size
+   in text transformer?)
+10) What generates the output used for evaluation?
+11) What pre-training is done?
+12) What's the primary downstream task being done? How many downstream tasks
+    can UniVL do?
