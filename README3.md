@@ -1,5 +1,7 @@
 UniVL Running on Skynet Walkthrough
 
+srun --gres gpu:4 -p debug -J "Job Name" --pty bash
+
 git clone https://github.com/J-Himes/sthvl
 cd sthvl
 
