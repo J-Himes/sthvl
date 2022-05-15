@@ -12,7 +12,7 @@ INIT_MODEL="weight/univl.pretrained.bin"
 OUTPUT_ROOT="ckpts"
 
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate py_univl
+conda activate sthvl
 
 python -m torch.distributed.launch --nproc_per_node=1 \
 main_task_retrieval.py \
