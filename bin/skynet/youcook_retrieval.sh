@@ -1,11 +1,11 @@
 # Test runs on 4 GPUs
 
 DATATYPE="youcook"
-TRAIN_CSV="data/youcookii/youcookii_train.csv"
-VAL_CSV="data/youcookii/youcookii_val.csv"
-DATA_PATH="data/youcookii/youcookii_data.no_transcript.pickle"
-FEATURES_PATH="data/youcookii/youcookii_videos_features.pickle"
-INIT_MODEL="weight/univl.pretrained.bin"
+TRAIN_CSV="data/data/youcookii/youcookii_train.csv"
+VAL_CSV="data/data/youcookii/youcookii_val.csv"
+DATA_PATH="data/data/youcookii/youcookii_data.no_transcript.pickle"
+FEATURES_PATH="data/data/youcookii/youcookii_videos_features.pickle"
+INIT_MODEL="weights/weight/univl.pretrained.bin"
 OUTPUT_ROOT="ckpts"
 
 source ~/.bashrc
