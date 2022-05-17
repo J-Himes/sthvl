@@ -9,12 +9,13 @@ INIT_MODEL="weight/univl.pretrained.bin"
 OUTPUT_ROOT="ckpts"
 
 source ~/.bashrc
+source ~/anaconda3/etc/profile.d/conda.sh
 conda activate sthvl
 
 python -m torch.distributed.launch --nproc_per_node=1 \
 main_task_caption.py \
 --do_train --num_thread_reader=4 \
---epochs=5 --batch_size=128 \
+--epochs=5 --batch_size=10 \
 --n_display=100 \
 --train_csv ${TRAIN_CSV} \
 --val_csv ${VAL_CSV} \
