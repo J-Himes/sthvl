@@ -1,11 +1,11 @@
 # Test runs on 4 GPUs
 
 DATATYPE="msrvtt"
-TRAIN_CSV="data/msrvtt/MSRVTT_train.9k.csv"
-VAL_CSV="data/msrvtt/MSRVTT_JSFUSION_test.csv"
-DATA_PATH="data/msrvtt/MSRVTT_data.json"
-FEATURES_PATH="data/msrvtt/msrvtt_videos_features.pickle"
-INIT_MODEL="weight/univl.pretrained.bin"
+TRAIN_CSV="data/data/msrvtt/MSRVTT_train.9k.csv"
+VAL_CSV="data/data/msrvtt/MSRVTT_JSFUSION_test.csv"
+DATA_PATH="data/data/msrvtt/MSRVTT_data.json"
+FEATURES_PATH="data/data/msrvtt/msrvtt_videos_features.pickle"
+INIT_MODEL="weights/weight/univl.pretrained.bin"
 OUTPUT_ROOT="ckpts"
 
 source ~/.bashrc
