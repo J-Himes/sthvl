@@ -21,6 +21,8 @@ from torch.utils.data import DataLoader
 from dataloaders.dataloader_youcook_caption import Youcook_Caption_DataLoader
 from dataloaders.dataloader_msrvtt_caption import MSRVTT_Caption_DataLoader
 from util import get_logger
+import pytorch_lightning as pl
+
 torch.distributed.init_process_group(backend="nccl")
 
 global logger
@@ -195,10 +197,7 @@ def prep_optimizer(args, model, num_train_optimization_steps, device, n_gpu, loc
                          schedule='warmup_linear', t_total=num_train_optimization_steps, weight_decay=0.01,
                          max_grad_norm=1.0)
 
-    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank],
-                                                      output_device=local_rank, find_unused_parameters=True)
-
-    return optimizer, scheduler, model
+    return optimizer, scheduler
 
 def dataloader_youcook_train(args, tokenizer):
     youcook_dataset = Youcook_Caption_DataLoader(
@@ -634,22 +633,23 @@ def main():
     nlgEvalObj = NLGEval(no_overlap=False, no_skipthoughts=True, no_glove=True, metrics_to_omit=None)
 
     assert args.datatype in DATALOADER_DICT
-    test_dataloader, test_length = DATALOADER_DICT[args.datatype]["val"](args, tokenizer)
+    valid_dataloader, valid_length = DATALOADER_DICT[args.datatype]["val"](args, tokenizer)
     if args.local_rank == 0:
         logger.info("***** Running test *****")
-        logger.info("  Num examples = %d", test_length)
+        logger.info("  Num examples = %d", valid_length)
         logger.info("  Batch size = %d", args.batch_size_val)
-        logger.info("  Num steps = %d", len(test_dataloader))
+        logger.info("  Num steps = %d", len(valid_dataloader))
 
     if args.do_train:
         train_dataloader, train_length, train_sampler = DATALOADER_DICT[args.datatype]["train"](args, tokenizer)
+
         num_train_optimization_steps = (int(len(train_dataloader) + args.gradient_accumulation_steps - 1)
                                         / args.gradient_accumulation_steps) * args.epochs
 
         coef_lr = args.coef_lr
         if args.init_model:
             coef_lr = 1.0
-        optimizer, scheduler, model = prep_optimizer(args, model, num_train_optimization_steps, device, n_gpu, args.local_rank, coef_lr=coef_lr)
+        optimizer, scheduler = prep_optimizer(args, model, num_train_optimization_steps, device, n_gpu, args.local_rank, coef_lr=coef_lr)
 
         if args.local_rank == 0:
             logger.info("***** Running training *****")
@@ -660,30 +660,12 @@ def main():
         best_score = 0.00001
         best_output_model_file = None
         global_step = 0
-        for epoch in range(args.epochs):
-            train_sampler.set_epoch(epoch)
 
-            tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, optimizer,
-                                               scheduler, global_step, nlgEvalObj=nlgEvalObj, local_rank=args.local_rank)
+        model.prep(optimizer, tokenizer)
 
-            if args.local_rank == 0:
-                logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch + 1, args.epochs, tr_loss)
-                output_model_file = save_model(epoch, args, model, type_name="")
-                if epoch > 0:
-                    Bleu_4 = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
-                    if best_score <= Bleu_4:
-                        best_score = Bleu_4
-                        best_output_model_file = output_model_file
-                    logger.info("The best model is: {}, the Bleu_4 is: {:.4f}".format(best_output_model_file, best_score))
-                else:
-                    logger.warning("Skip the evaluation after {}-th epoch.".format(epoch+1))
-
-        if args.local_rank == 0:
-            model = load_model(-1, args, n_gpu, device, model_file=best_output_model_file)
-            eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
-    elif args.do_eval:
-        if args.local_rank == 0:
-            eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
+        trainer = pl.Trainer(gpus=n_gpu, precision=16, limit_train_batches=0.5,
+                             default_root_dir="ckpts/ckpts_avsd_lightning")
+        trainer.fit(model, train_dataloader, valid_dataloader)
 
 if __name__ == "__main__":
     main()
