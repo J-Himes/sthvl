@@ -1,0 +1,74 @@
+do_train: True
+# do_pretrain: False
+# do_eval: False
+
+DATATYPE: msrvtt
+# task_type: caption
+epochs: 5
+batch_size: 10
+lr: 0.00003
+# coef_lr: 0.1
+# margin: 0.1
+max_words: 48
+max_frames: 48
+batch_size_val: 32
+# debugger: True
+# small_gpu: True
+# video_dim: 1024
+# audio_dim: 128
+
+OUTPUT_ROOT: ckpts
+TRAIN_CSV: data/msrvtt/MSRVTT_train.9k.csv
+VAL_CSV: data/msrvtt/MSRVTT_JSFUSION_test.csv
+DATA_PATH: data/msrvtt/MSRVTT_data.json
+FEATURES_PATH: data/msrvtt/msrvtt_videos_features.pickle
+INIT_MODEL: weight/univl.pretrained.bin
+
+datatype: ${DATATYPE}
+train_csv: ${TRAIN_CSV}
+val_csv: ${VAL_CSV}
+data_path: ${DATA_PATH}
+features_path: ${FEATURES_PATH}
+output_dir: ${OUTPUT_ROOT}/ckpt_msrvtt_caption
+init_model: ${INIT_MODEL}
+
+bert_model: bert-base-uncased
+# visual_model: visual-base
+# audio_model: audio-base
+# cross_model: cross-base
+# decoder_model: decoder-base
+do_lower_case: True
+# text_num_hidden_layers: 12
+visual_num_hidden_layers: 6
+# cross_num_hidden_layers: 2
+decoder_num_hidden_layers: 3
+# unfreeze-layers: 1
+
+
+# max_signal: 100
+# n_pair: 1
+# negative_weighting: 1
+# hard_negative_rate: 0.5
+# use_mil: True
+num_thread_reader: 4
+# gradient_accumulation_steps: 1
+# warmup_proportion: 0.1
+n_display: 100
+
+# n_gpu: 1
+# local_rank: 0
+# world_size: 0
+
+stage_two: True
+# seed: 0
+
+# cache_dir: False
+
+# defaults:
+  - configs/audio-config
+  - configs/audio-cross-config
+  - configs/bert-config
+  - configs/cross-config
+  - configs/decoder-config
+  - configs/i3d-config
+  - configs/visual-config

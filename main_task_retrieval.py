@@ -8,6 +8,7 @@ from torch.utils.data import (SequentialSampler)
 import numpy as np
 import random
 import os
+from nlgeval import NLGEval
 from metrics import compute_metrics
 import time
 import argparse
@@ -20,6 +21,8 @@ from util import parallel_apply, get_logger
 from dataloaders.dataloader_youcook_retrieval import Youcook_DataLoader
 from dataloaders.dataloader_msrvtt_retrieval import MSRVTT_DataLoader
 from dataloaders.dataloader_msrvtt_retrieval import MSRVTT_TrainDataLoader
+import pytorch_lightning as pl
+
 torch.distributed.init_process_group(backend="nccl")
 
 global logger
@@ -194,10 +197,7 @@ def prep_optimizer(args, model, num_train_optimization_steps, device, n_gpu, loc
                          schedule='warmup_linear', t_total=num_train_optimization_steps, weight_decay=0.01,
                          max_grad_norm=1.0)
 
-    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank],
-                                                      output_device=local_rank, find_unused_parameters=True)
-
-    return optimizer, scheduler, model
+    return optimizer, scheduler
 
 def dataloader_youcook_train(args, tokenizer):
     youcook_dataset = Youcook_DataLoader(
@@ -324,12 +324,11 @@ def train_epoch(epoch, args, model, train_dataloader, device, n_gpu, optimizer, 
     total_loss = 0
 
     for step, batch in enumerate(train_dataloader):
-        if n_gpu == 1:
-            # multi-gpu does scattering it-self
-            batch = tuple(t.to(device=device, non_blocking=True) for t in batch)
+        batch = tuple(t.to(device=device, non_blocking=True) for t in batch)
 
         input_ids, input_mask, segment_ids, video, video_mask, \
         pairs_masked_text, pairs_token_labels, masked_video, video_labels_index = batch
+
         loss = model(input_ids, segment_ids, input_mask, video, video_mask,
                      pairs_masked_text=pairs_masked_text, pairs_token_labels=pairs_token_labels,
                      masked_video=masked_video, video_labels_index=video_labels_index)
@@ -363,6 +362,100 @@ def train_epoch(epoch, args, model, train_dataloader, device, n_gpu, optimizer, 
 
     total_loss = total_loss / len(train_dataloader)
     return total_loss, global_step
+
+def get_inst_idx_to_tensor_position_map(inst_idx_list):
+    ''' Indicate the position of an instance in a tensor. '''
+    return {inst_idx: tensor_position for tensor_position, inst_idx in enumerate(inst_idx_list)}
+
+
+def collect_active_part(beamed_tensor, curr_active_inst_idx, n_prev_active_inst, n_bm):
+    ''' Collect tensor parts associated to active instances. '''
+
+    _, *d_hs = beamed_tensor.size()
+    n_curr_active_inst = len(curr_active_inst_idx)
+    new_shape = (n_curr_active_inst * n_bm, *d_hs)
+
+    beamed_tensor = beamed_tensor.view(n_prev_active_inst, -1)
+    beamed_tensor = beamed_tensor.index_select(0, curr_active_inst_idx)
+    beamed_tensor = beamed_tensor.view(*new_shape)
+
+    return beamed_tensor
+
+
+def collate_active_info(input_tuples, inst_idx_to_position_map, active_inst_idx_list, n_bm, device):
+    assert isinstance(input_tuples, tuple)
+    sequence_output_rpt, visual_output_rpt, input_ids_rpt, input_mask_rpt, video_mask_rpt = input_tuples
+
+    # Sentences which are still active are collected,
+    # so the decoder will not run on completed sentences.
+    n_prev_active_inst = len(inst_idx_to_position_map)
+    active_inst_idx = [inst_idx_to_position_map[k] for k in active_inst_idx_list]
+    active_inst_idx = torch.LongTensor(active_inst_idx).to(device)
+
+    active_sequence_output_rpt = collect_active_part(sequence_output_rpt, active_inst_idx, n_prev_active_inst, n_bm)
+    active_visual_output_rpt = collect_active_part(visual_output_rpt, active_inst_idx, n_prev_active_inst, n_bm)
+    active_input_ids_rpt = collect_active_part(input_ids_rpt, active_inst_idx, n_prev_active_inst, n_bm)
+    active_input_mask_rpt = collect_active_part(input_mask_rpt, active_inst_idx, n_prev_active_inst, n_bm)
+    active_video_mask_rpt = collect_active_part(video_mask_rpt, active_inst_idx, n_prev_active_inst, n_bm)
+    active_inst_idx_to_position_map = get_inst_idx_to_tensor_position_map(active_inst_idx_list)
+
+    return (active_sequence_output_rpt, active_visual_output_rpt, active_input_ids_rpt, active_input_mask_rpt, active_video_mask_rpt), \
+           active_inst_idx_to_position_map
+
+def beam_decode_step(decoder, inst_dec_beams, len_dec_seq,
+                     inst_idx_to_position_map, n_bm, device, input_tuples, decoder_length=None):
+
+    assert isinstance(input_tuples, tuple)
+
+    ''' Decode and update beam status, and then return active beam idx'''
+    def prepare_beam_dec_seq(inst_dec_beams, len_dec_seq):
+        dec_partial_seq = [b.get_current_state() for b in inst_dec_beams if not b.done]
+        dec_partial_seq = torch.stack(dec_partial_seq).to(device)
+        dec_partial_seq = dec_partial_seq.view(-1, len_dec_seq)
+        return dec_partial_seq
+
+    def predict_word(next_decoder_ids, n_active_inst, n_bm, device, input_tuples):
+        sequence_output_rpt, visual_output_rpt, input_ids_rpt, input_mask_rpt, video_mask_rpt = input_tuples
+        next_decoder_mask = torch.ones(next_decoder_ids.size(), dtype=torch.uint8).to(device)
+
+        dec_output = decoder(sequence_output_rpt, visual_output_rpt, input_ids_rpt, input_mask_rpt,
+                             video_mask_rpt, next_decoder_ids, next_decoder_mask, shaped=True, get_logits=True)
+        dec_output = dec_output[:, -1, :]
+        word_prob = torch.nn.functional.log_softmax(dec_output, dim=1)
+        word_prob = word_prob.view(n_active_inst, n_bm, -1)
+        return word_prob
+
+    def collect_active_inst_idx_list(inst_beams, word_prob, inst_idx_to_position_map, decoder_length=None):
+        active_inst_idx_list = []
+        for inst_idx, inst_position in inst_idx_to_position_map.items():
+            if decoder_length is None:
+                is_inst_complete = inst_beams[inst_idx].advance(word_prob[inst_position])
+            else:
+                is_inst_complete = inst_beams[inst_idx].advance(word_prob[inst_position], word_length=decoder_length[inst_idx])
+            if not is_inst_complete:
+                active_inst_idx_list += [inst_idx]
+
+        return active_inst_idx_list
+
+    n_active_inst = len(inst_idx_to_position_map)
+    dec_seq = prepare_beam_dec_seq(inst_dec_beams, len_dec_seq)
+    word_prob = predict_word(dec_seq, n_active_inst, n_bm, device, input_tuples)
+
+    # Update the beam with predicted word prob information and collect incomplete instances
+    active_inst_idx_list = collect_active_inst_idx_list(inst_dec_beams, word_prob, inst_idx_to_position_map,
+                                                        decoder_length=decoder_length)
+
+    return active_inst_idx_list
+
+def collect_hypothesis_and_scores(inst_dec_beams, n_best):
+    all_hyp, all_scores = [], []
+    for inst_idx in range(len(inst_dec_beams)):
+        scores, tail_idxs = inst_dec_beams[inst_idx].sort_scores()
+        all_scores += [scores[:n_best]]
+
+        hyps = [inst_dec_beams[inst_idx].get_hypothesis(i) for i in tail_idxs[:n_best]]
+        all_hyp += [hyps]
+    return all_hyp, all_scores
 
 def _run_on_single_gpu(model, batch_list_t, batch_list_v, batch_sequence_output_list, batch_visual_output_list):
     sim_matrix = []
@@ -460,27 +553,29 @@ def main():
     device, n_gpu = init_device(args, args.local_rank)
 
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
-
-    assert  args.task_type == "retrieval"
     model = init_model(args, device, n_gpu, args.local_rank)
 
+    assert args.task_type == "retrieval"
+    nlgEvalObj = NLGEval(no_overlap=False, no_skipthoughts=True, no_glove=True, metrics_to_omit=None)
+
     assert args.datatype in DATALOADER_DICT
-    test_dataloader, test_length = DATALOADER_DICT[args.datatype]["val"](args, tokenizer)
+    valid_dataloader, valid_length = DATALOADER_DICT[args.datatype]["val"](args, tokenizer)
     if args.local_rank == 0:
         logger.info("***** Running test *****")
-        logger.info("  Num examples = %d", test_length)
+        logger.info("  Num examples = %d", valid_length)
         logger.info("  Batch size = %d", args.batch_size_val)
-        logger.info("  Num steps = %d", len(test_dataloader))
+        logger.info("  Num steps = %d", len(valid_dataloader))
 
     if args.do_train:
         train_dataloader, train_length, train_sampler = DATALOADER_DICT[args.datatype]["train"](args, tokenizer)
+
         num_train_optimization_steps = (int(len(train_dataloader) + args.gradient_accumulation_steps - 1)
                                         / args.gradient_accumulation_steps) * args.epochs
 
         coef_lr = args.coef_lr
         if args.init_model:
             coef_lr = 1.0
-        optimizer, scheduler, model = prep_optimizer(args, model, num_train_optimization_steps, device, n_gpu, args.local_rank, coef_lr=coef_lr)
+        optimizer, scheduler = prep_optimizer(args, model, num_train_optimization_steps, device, n_gpu, args.local_rank, coef_lr=coef_lr)
 
         if args.local_rank == 0:
             logger.info("***** Running training *****")
@@ -491,25 +586,13 @@ def main():
         best_score = 0.00001
         best_output_model_file = None
         global_step = 0
-        for epoch in range(args.epochs):
-            train_sampler.set_epoch(epoch)
-            tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, device, n_gpu, optimizer,
-                                               scheduler, global_step, local_rank=args.local_rank)
-            if args.local_rank == 0:
-                logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch + 1, args.epochs, tr_loss)
-                output_model_file = save_model(epoch, args, model, type_name="")
 
-                R1 = eval_epoch(args, model, test_dataloader, device, n_gpu)
-                if best_score <= R1:
-                    best_score = R1
-                    best_output_model_file = output_model_file
-                logger.info("The best model is: {}, the R1 is: {:.4f}".format(best_output_model_file, best_score))
-        if args.local_rank == 0:
-            model = load_model(-1, args, n_gpu, device, model_file=best_output_model_file)
-            eval_epoch(args, model, test_dataloader, device, n_gpu)
-    elif args.do_eval:
-        if args.local_rank == 0:
-            eval_epoch(args, model, test_dataloader, device, n_gpu)
+        model.prep(optimizer, tokenizer)
+
+        trainer = pl.Trainer(gpus=n_gpu, precision=16, limit_train_batches=0.5,
+                             default_root_dir="ckpts/ckpts_mtr_lightning")
+        trainer.fit(model, train_dataloader, valid_dataloader)
+
 
 if __name__ == "__main__":
     main()

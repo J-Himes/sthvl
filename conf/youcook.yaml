@@ -1,0 +1,29 @@
+TRAIN_CSV: data/youcookii/youcookii_train.csv
+VAL_CSV: data/youcookii/youcookii_val.csv
+DATA_PATH: data/youcookii/youcookii_data.no_transcript.pickle
+FEATURES_PATH: data/youcookii/youcookii_videos_features.pickle
+INIT_MODEL: weight/univl.pretrained.bin
+OUTPUT_ROOT: ckpts
+
+train_csv: ${TRAIN_CSV}
+val_csv: ${VAL_CSV}
+data_path: ${DATA_PATH}
+features_path: ${FEATURES_PATH}
+output_dir: ${OUTPUT_ROOT}/ckpt_youcook_caption
+init_model: ${INIT_MODEL}
+
+# task_type: caption
+do_train: True
+epochs: 5
+batch_size: 10
+num_thread_reader: 4
+n_display: 100
+bert_model: bert-base-uncased
+do_lower_case: True
+lr: 0.00003
+max_words: 128
+max_frames: 96
+batch_size_val: 64
+visual_num_hidden_layers: 6
+decoder_num_hidden_layers: 3
+stage_two: True

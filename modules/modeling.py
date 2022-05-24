@@ -553,9 +553,13 @@ class UniVL(UniVLPreTrainedModel):
                      output_caption_ids=pairs_output_caption_ids)
 
     def validation_step(self, val_batch, batch_idx):
-        input_ids, input_mask, segment_ids, video, video_mask, \
-        pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \
-        pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids = val_batch
+        if self.task_config.do_pretrain or self.task_config.task_type == "caption":
+            input_ids, input_mask, segment_ids, video, video_mask, \
+            pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \
+            pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids = val_batch
+        if self.task_config.do_pretrain or self.task_config.task_type == "retrieval":
+            input_ids, input_mask, segment_ids, video, video_mask, \
+            pairs_masked_text, pairs_token_labels, masked_video, video_labels_index = val_batch
 
         with torch.no_grad():
             sequence_output, visual_output = self.get_sequence_visual_output(input_ids, segment_ids, input_mask, video,

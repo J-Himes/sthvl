@@ -344,9 +344,6 @@ def train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, 
     total_loss = 0
 
     for step, batch in enumerate(train_dataloader):
-        # if n_gpu == 1:
-        #     # multi-gpu does scattering it-self
-        #     batch = tuple(t.to(device) for t in batch)
         batch = tuple(t.to(device=device, non_blocking=True) for t in batch)
 
         input_ids, input_mask, segment_ids, video, video_mask, \
@@ -664,7 +661,7 @@ def main():
         model.prep(optimizer, tokenizer)
 
         trainer = pl.Trainer(gpus=n_gpu, precision=16, limit_train_batches=0.5,
-                             default_root_dir="ckpts/ckpts_avsd_lightning")
+                             default_root_dir="ckpts/ckpts_mtc_lightning")
         trainer.fit(model, train_dataloader, valid_dataloader)
 
 if __name__ == "__main__":

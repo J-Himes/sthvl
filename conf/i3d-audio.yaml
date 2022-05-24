@@ -1,0 +1,68 @@
+do_train: True
+do_pretrain: False
+do_eval: False
+
+datatype: avsd
+task_type: caption
+epochs: 5
+batch_size: 1
+lr: 0.00005
+coef_lr: 0.1
+margin: 0.1
+max_words: 1
+max_frames: 1
+batch_size_val: 1
+debugger: True
+small_gpu: True
+video_dim: 1024
+audio_dim: 128
+
+output_dir: ckpts/ckpt_exp_i3d_only
+train_path: data/avsd/charades_features/<FeaType>/<ImageID>.npy
+valid_path: data/avsd/charades_features/<FeaType>/<ImageID>.npy
+train_feature: data/avsd/train_i3d_audio_features.json
+valid_feature: data/avsd/valid_i3d_audio_features.json
+train_set: data/avsd/train_i3d_audio_data.json
+valid_set: data/avsd/valid_i3d_audio_data.json
+
+init_model: weight/univl.pretrained.bin
+bert_model: bert-base-uncased
+visual_model: visual-base
+audio_model: audio-base
+i3d_model: i3d-base
+cross_model: cross-base
+decoder_model: decoder-base
+do_lower_case: True
+text_num_hidden_layers: 12
+visual_num_hidden_layers: 6
+cross_num_hidden_layers: 2
+decoder_num_hidden_layers: 3
+unfreeze-layers: 1
+
+max_signal: 100
+n_pair: 1
+negative_weighting: 1
+hard_negative_rate: 0.5
+use_mil: True
+num_thread_reader: 1
+gradient_accumulation_steps: 1
+warmup_proportion: 0.1
+n_display: 100
+
+n_gpu: 1
+local_rank: 0
+world_size: 0
+
+stage_two: True
+seed: 0
+
+cache_dir: False
+
+defaults:
+  - configs/audio-config
+  - configs/audio-cross-config
+  - configs/bert-config
+  - configs/cross-config
+  - configs/decoder-config
+  - configs/i3d-config
+  - configs/visual-config

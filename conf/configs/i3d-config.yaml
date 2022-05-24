@@ -1,0 +1,12 @@
+i3d_config:
+  num_classes: 400
+  spatial_squeeze: 1
+  final_endpoint: Mixed_5c
+  name: inception_i3d
+  in_channels: 3
+  dropout_keep_prob: 0.5
+  unfreeze_layers: 1
+  finetune_s3d: 1
+  max_frames: 1
+  feature_size: 1
+  model_path: weight/i3d-models/rgb_imagenet.pt
