@@ -1,0 +1,62 @@
+TRAIN_CSV: data/youcookii/youcookii_train.csv
+VAL_CSV: data/youcookii/youcookii_val.csv
+DATA_PATH: data/youcookii/youcookii_data.no_transcript.pickle
+FEATURES_PATH: data/youcookii/youcookii_videos_features.pickle
+INIT_MODEL: weight/univl.pretrained.bin
+OUTPUT_ROOT: ckpts
+DATATYPE: youcook
+
+datatype: youcook
+train_csv: data/youcookii/youcookii_train.csv
+val_csv: data/youcookii/youcookii_val.csv
+data_path: data/youcookii/youcookii_data.no_transcript.pickle
+features_path: data/youcookii/youcookii_videos_features.pickle
+output_dir: ckpts/ckpt_youcook_caption
+init_model: weight/univl.pretrained.bin
+
+task_type: caption
+do_train: True
+epochs: 5
+batch_size: 10
+num_thread_reader: 4
+n_display: 100
+bert_model: bert-base-uncased
+do_lower_case: True
+lr: 0.00003
+max_words: 128
+
+max_frames: 96
+batch_size_val: 64
+visual_num_hidden_layers: 6
+decoder_num_hidden_layers: 3
+stage_two: True
+do_pretrain: True
+do_eval: True
+lr_decay: 0.9
+video_dim: 1024
+seed: 42
+
+feature_framerate: 1
+min_time: 5.0
+margin: 0.1
+hard_negative_rate: 0.5
+negative_weighting: 1
+n_pair: 1
+visual_model: visual-base
+cross_model: cross-base
+decoder_model: decoder-base
+warmup_proportion: 0.1
+
+gradient_accumulation_steps: 1
+n_gpu: 1
+cache_dir: ""
+fp16: True
+fp16_opt_level: '01'
+world_size: 0
+local_rank: 0
+coef_lr: 0.1
+use_mil: True
+sampled_use_mil: True
+
+text_num_hidden_layers: 12
+cross_num_hidden_layers: 2
