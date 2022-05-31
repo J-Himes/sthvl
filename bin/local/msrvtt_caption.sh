@@ -15,14 +15,14 @@ conda activate sthvl
 python -m torch.distributed.launch --nproc_per_node=1 \
 main_task_caption.py \
 --do_train --num_thread_reader=4 \
---epochs=5 --batch_size=10 \
+--epochs=5 --batch_size=2 \
 --n_display=100 \
 --train_csv ${TRAIN_CSV} \
 --val_csv ${VAL_CSV} \
 --data_path ${DATA_PATH} \
 --features_path ${FEATURES_PATH} \
 --output_dir ${OUTPUT_ROOT}/ckpt_msrvtt_caption --bert_model bert-base-uncased \
---do_lower_case --lr 3e-5 --max_words 48 --max_frames 48 \
---batch_size_val 32 --visual_num_hidden_layers 6 \
+--do_lower_case --lr 3e-5 --max_words 5 --max_frames 5 \
+--batch_size_val 2 --visual_num_hidden_layers 6 \
 --decoder_num_hidden_layers 3 --datatype ${DATATYPE} --stage_two \
 --init_model ${INIT_MODEL}
