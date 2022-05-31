@@ -24,6 +24,7 @@ Document used in video above: https://docs.google.com/document/d/1Esl4LZWjVFGHuz
 Execute the following in order. Be sure to do so from your personal directory in Skynet, not the shared directory.
 
 ```
+tmux 
 srun --gres gpu:4 -p debug -J "Job Name" --pty bash
 
 git clone https://github.com/J-Himes/sthvl
