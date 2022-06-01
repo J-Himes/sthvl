@@ -17,7 +17,7 @@ init_model: weight/univl.pretrained.bin
 do_train: True
 task_type: caption
 epochs: 5
-batch_size: 10
+batch_size: 1152412413123
 lr: 0.00003
 max_words: 48
 max_frames: 48

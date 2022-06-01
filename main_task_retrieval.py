@@ -591,7 +591,7 @@ def main():
 
         trainer = pl.Trainer(gpus=n_gpu, precision=16, limit_train_batches=0.5,
                              default_root_dir="ckpts/ckpts_mtr_lightning")
-        trainer.fit(model, train_dataloader, valid_dataloader)
+        trainer.fit(model, train_dataloader)
 
 
 if __name__ == "__main__":

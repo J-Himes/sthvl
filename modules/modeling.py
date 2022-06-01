@@ -543,14 +543,21 @@ class UniVL(UniVLPreTrainedModel):
         return self.optimizer
 
     def training_step(self, train_batch, batch_idx):
-        input_ids, input_mask, segment_ids, video, video_mask, \
-        pairs_masked_text, pairs_token_labels, masked_video, video_labels_index,\
-        pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids = train_batch
-        return self.forward(input_ids, segment_ids, input_mask, video, video_mask,
-                     pairs_masked_text=pairs_masked_text, pairs_token_labels=pairs_token_labels,
-                     masked_video=masked_video, video_labels_index=video_labels_index,
-                     input_caption_ids=pairs_input_caption_ids, decoder_mask=pairs_decoder_mask,
-                     output_caption_ids=pairs_output_caption_ids)
+        if self.task_config.do_pretrain or self.task_config.task_type == "caption":
+            input_ids, input_mask, segment_ids, video, video_mask, \
+            pairs_masked_text, pairs_token_labels, masked_video, video_labels_index,\
+            pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids = train_batch
+            return self.forward(input_ids, segment_ids, input_mask, video, video_mask,
+                         pairs_masked_text=pairs_masked_text, pairs_token_labels=pairs_token_labels,
+                         masked_video=masked_video, video_labels_index=video_labels_index,
+                         input_caption_ids=pairs_input_caption_ids, decoder_mask=pairs_decoder_mask,
+                         output_caption_ids=pairs_output_caption_ids)
+        if self.task_config.do_pretrain or self.task_config.task_type == "retrieval":
+            input_ids, input_mask, segment_ids, video, video_mask, \
+            pairs_masked_text, pairs_token_labels, masked_video, video_labels_index = train_batch
+            return self.forward(input_ids, segment_ids, input_mask, video, video_mask,
+                         pairs_masked_text=pairs_masked_text, pairs_token_labels=pairs_token_labels,
+                         masked_video=masked_video, video_labels_index=video_labels_index)
 
     def validation_step(self, val_batch, batch_idx):
         if self.task_config.do_pretrain or self.task_config.task_type == "caption":
