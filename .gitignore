@@ -6,6 +6,8 @@ data/
 data
 ckpts/
 ckpts
+outputs
+outputs/
 *.idea*
  
 # Byte-compiled / optimized / DLL files

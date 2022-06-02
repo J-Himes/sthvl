@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import torch
+import torch, gc
 from torch.utils.data import (SequentialSampler)
 import numpy as np
 import random
@@ -12,9 +12,8 @@ from collections import OrderedDict
 from nlgeval import NLGEval
 import time
 import argparse
+import sys
 import hydra
-from hydra.utils import get_original_cwd, to_absolute_path
-from omegaconf import DictConfig
 from modules.tokenization import BertTokenizer
 from modules.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 from modules.modeling import UniVL
@@ -112,6 +111,15 @@ def get_args(description='UniVL on Caption Task'):
 
 def set_seed_logger(args):
     global logger
+
+    if args.gradient_accumulation_steps < 1:
+        raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
+            args.gradient_accumulation_steps))
+    if not args.do_train and not args.do_eval:
+        raise ValueError("At least one of `do_train` or `do_eval` must be True.")
+
+    args.batch_size = int(args.batch_size / args.gradient_accumulation_steps)
+
     # predefining random initial seeds
     random.seed(args.seed)
     os.environ['PYTHONHASHSEED'] = str(args.seed)
@@ -138,19 +146,11 @@ def set_seed_logger(args):
 
     return args
 
-def set_pathing(args):
-    args.train_csv = os.path.join(get_original_cwd(), args.train_csv)
-    args.val_csv = os.path.join(get_original_cwd(), args.val_csv)
-    args.data_path = os.path.join(get_original_cwd(), args.data_path)
-    args.features_path = os.path.join(get_original_cwd(), args.features_path)
-    args.init_model = os.path.join(get_original_cwd(), args.init_model)
-    args.output_dir = os.path.join(get_original_cwd(), args.output_dir)
-    return args
-
 def init_device(args, local_rank):
     global logger
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu", local_rank)
+    gc.collect()
     torch.cuda.empty_cache()
     torch.cuda.set_per_process_memory_fraction(1.0, device)
 
@@ -635,10 +635,11 @@ DATALOADER_DICT = {}
 DATALOADER_DICT["youcook"] = {"train":dataloader_youcook_train, "val":dataloader_youcook_test}
 DATALOADER_DICT["msrvtt"] = {"train":dataloader_msrvtt_train, "val":dataloader_msrvtt_test}
 
-@hydra.main(config_path="conf", config_name="msrvtt_caption")
-def main(args: DictConfig):
+def main():
+    hydra.initialize(config_path=sys.argv[1])
+    args = hydra.compose(config_name=sys.argv[2])
+
     args = set_seed_logger(args)
-    args = set_pathing(args)
     device, n_gpu = init_device(args, args.local_rank)
 
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
