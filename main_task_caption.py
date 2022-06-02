@@ -12,6 +12,9 @@ from collections import OrderedDict
 from nlgeval import NLGEval
 import time
 import argparse
+import hydra
+from hydra.utils import get_original_cwd, to_absolute_path
+from omegaconf import DictConfig
 from modules.tokenization import BertTokenizer
 from modules.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 from modules.modeling import UniVL
@@ -135,10 +138,21 @@ def set_seed_logger(args):
 
     return args
 
+def set_pathing(args):
+    args.train_csv = os.path.join(get_original_cwd(), args.train_csv)
+    args.val_csv = os.path.join(get_original_cwd(), args.val_csv)
+    args.data_path = os.path.join(get_original_cwd(), args.data_path)
+    args.features_path = os.path.join(get_original_cwd(), args.features_path)
+    args.init_model = os.path.join(get_original_cwd(), args.init_model)
+    args.output_dir = os.path.join(get_original_cwd(), args.output_dir)
+    return args
+
 def init_device(args, local_rank):
     global logger
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu", local_rank)
+    torch.cuda.empty_cache()
+    torch.cuda.set_per_process_memory_fraction(1.0, device)
 
     n_gpu = torch.cuda.device_count()
     logger.info("device: {} n_gpu: {}".format(device, n_gpu))
@@ -621,10 +635,10 @@ DATALOADER_DICT = {}
 DATALOADER_DICT["youcook"] = {"train":dataloader_youcook_train, "val":dataloader_youcook_test}
 DATALOADER_DICT["msrvtt"] = {"train":dataloader_msrvtt_train, "val":dataloader_msrvtt_test}
 
-def main():
-    global logger
-    args = get_args()
+@hydra.main(config_path="conf", config_name="msrvtt_caption")
+def main(args: DictConfig):
     args = set_seed_logger(args)
+    args = set_pathing(args)
     device, n_gpu = init_device(args, args.local_rank)
 
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)

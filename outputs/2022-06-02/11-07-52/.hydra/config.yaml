@@ -1,0 +1,128 @@
+configs:
+  audio_config:
+    attention_probs_dropout_prob: 0.1
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    hidden_size: 768
+    initializer_range: 0.02
+    intermediate_size: 3072
+    max_position_embeddings: 512
+    num_attention_heads: 12
+    num_hidden_layers: 1
+    vocab_size: 128
+  audio_cross_config:
+    attention_probs_dropout_prob: 0.1
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    hidden_size: 768
+    initializer_range: 0.02
+    intermediate_size: 3072
+    max_position_embeddings: 1024
+    num_attention_heads: 12
+    num_hidden_layers: 2
+    vocab_size: 768
+    type_vocab_size: 3
+  bert_config:
+    attention_probs_dropout_prob: 0.1
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    hidden_size: 768
+    initializer_range: 0.02
+    intermediate_size: 3072
+    max_position_embeddings: 512
+    num_attention_heads: 12
+    num_hidden_layers: 12
+    type_vocab_size: 2
+    vocab_size: 30522
+  cross_config:
+    attention_probs_dropout_prob: 0.1
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    hidden_size: 768
+    initializer_range: 0.02
+    intermediate_size: 3072
+    max_position_embeddings: 1024
+    num_attention_heads: 12
+    num_hidden_layers: 2
+    vocab_size: 768
+  decoder_config:
+    attention_probs_dropout_prob: 0.1
+    hidden_act: gelu
+    hidden_dropout_prob: 0.1
+    hidden_size: 768
+    initializer_range: 0.02
+    intermediate_size: 3072
+    num_attention_heads: 12
+    num_hidden_layers: 12
+    type_vocab_size: 2
+    vocab_size: 30522
+    num_decoder_layers: 1
+    max_target_embeddings: 512
+  i3d_config:
+    num_classes: 400
+    spatial_squeeze: 1
+    final_endpoint: Mixed_5c
+    name: inception_i3d
+    in_channels: 3
+    dropout_keep_prob: 0.5
+    unfreeze_layers: 1
+    finetune_s3d: 1
+    max_frames: 1
+    feature_size: 1
+    model_path: weight/i3d-models/rgb_imagenet.pt
+  visual_config:
+    attention_probs_dropout_prob: 0.1,
+    hidden_act: gelu,
+    hidden_dropout_prob: 0.1,
+    hidden_size: 768,
+    initializer_range: 0.02,
+    intermediate_size: 3072,
+    max_position_embeddings: 512,
+    num_attention_heads: 12,
+    num_hidden_layers: 1,
+    vocab_size: 1024
+datatype: msrvtt
+train_csv: data/msrvtt/MSRVTT_train.9k.csv
+val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
+data_path: data/msrvtt/MSRVTT_data.json
+features_path: data/msrvtt/msrvtt_videos_features.pickle
+init_model: weight/univl.pretrained.bin
+output_dir: ckpts/ckpt_msrvtt_caption
+do_train: true
+do_pretrain: false
+do_eval: false
+task_type: caption
+epochs: 5
+batch_size: 2
+lr: 5.0e-05
+coef_lr: 0.1
+margin: 0.1
+max_words: 5
+max_frames: 5
+batch_size_val: 2
+video_dim: 1024
+feature_framerate: 1
+bert_model: bert-base-uncased
+visual_model: visual-base
+cross_model: cross-base
+decoder_model: decoder-base
+do_lower_case: true
+text_num_hidden_layers: 12
+visual_num_hidden_layers: 6
+cross_num_hidden_layers: 2
+decoder_num_hidden_layers: 3
+max_signal: 100
+n_pair: 1
+negative_weighting: 1
+hard_negative_rate: 0.5
+use_mil: true
+num_thread_reader: 4
+gradient_accumulation_steps: 1
+warmup_proportion: 0.1
+n_display: 100
+n_gpu: 1
+local_rank: 0
+world_size: 0
+stage_two: true
+seed: 0
+cache_dir: false
