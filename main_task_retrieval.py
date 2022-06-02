@@ -589,8 +589,9 @@ def main():
 
         model.prep(optimizer, tokenizer)
 
-        trainer = pl.Trainer(gpus=n_gpu, precision=16, limit_train_batches=0.5,
+        trainer = pl.Trainer(max_epochs=args.epochs, gpus=n_gpu, precision=16, limit_train_batches=0.5,
                              default_root_dir="ckpts/ckpts_mtr_lightning")
+
         trainer.fit(model, train_dataloader)
 
 
