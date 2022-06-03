@@ -1,7 +1,10 @@
 # sthvl exceptions
+modules/bert-base-uncased
 modules/bert-base-uncased/
 weight/
 weight
+weights
+weights/
 data/
 data
 ckpts/

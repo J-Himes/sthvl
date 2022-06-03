@@ -3,7 +3,7 @@ train_csv: data/msrvtt/MSRVTT_train.9k.csv
 val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
 data_path: data/msrvtt/MSRVTT_data.json
 features_path: data/msrvtt/msrvtt_videos_features.pickle
-init_model: weight/univl.pretrained.bin
+init_model: weights/weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_msrvtt_caption
 
 do_train: True
