@@ -20,7 +20,7 @@ main_task_caption.py \
 --val_csv ${VAL_CSV} \
 --data_path ${DATA_PATH} \
 --features_path ${FEATURES_PATH} \
---output_dir ${OUTPUT_ROOT}/ckpt_msrvtt_caption --bert_model bert-base-uncased \
+--output_dir ${OUTPUT_ROOT}/ckpt_msrvtt_caption_univl_naive_sampling --bert_model bert-base-uncased \
 --do_lower_case --lr 3e-5 --max_words 48 --max_frames 48 \
 --batch_size_val 32 --visual_num_hidden_layers 6 \
 --decoder_num_hidden_layers 3 --datatype ${DATATYPE} --stage_two \

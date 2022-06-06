@@ -33,6 +33,14 @@ class MSRVTT_Caption_DataLoader(Dataset):
         self.max_frames = max_frames
         self.tokenizer = tokenizer
 
+        for key in self.feature_dict:
+            size = len(self.feature_dict[key])
+            count = int(size * 0.15)
+            indicies = list(range(len(self.feature_dict[key])))
+            random_frames = random.sample(indicies, count)
+            deleted_frames = [x for x in indicies if x not in random_frames]
+            self.feature_dict[key] = np.delete(self.feature_dict[key], deleted_frames, axis=0)
+
         self.feature_size = self.feature_dict[self.csv['video_id'].values[0]].shape[-1]
 
         assert split_type in ["train", "val", "test"]
