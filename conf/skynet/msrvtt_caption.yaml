@@ -4,7 +4,7 @@ val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
 data_path: data/msrvtt/MSRVTT_data.json
 features_path: data/msrvtt/msrvtt_videos_features.pickle
 init_model: weight/univl.pretrained.bin
-output_dir: ckpts/ckpt_msrvtt_caption
+output_dir: ckpts/ckpt_msrvtt_caption_univl_baseline
 
 do_train: True
 do_pretrain: False

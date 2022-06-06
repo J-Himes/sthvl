@@ -1,16 +1,16 @@
-datatype: msrvtt
-train_csv: data/msrvtt/MSRVTT_train.9k.csv
-val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
-data_path: data/msrvtt/MSRVTT_data.json
-features_path: data/msrvtt/msrvtt_videos_features.pickle
+datatype: youcook
+train_csv: data/youcookii/youcookii_train.csv
+val_csv: data/youcookii/youcookii_val.csv
+data_path: data/youcookii/youcookii_data.no_transcript.pickle
+features_path: data/youcookii/youcookii_videos_features.pickle
 init_model: weight/univl.pretrained.bin
-output_dir: ckpts/ckpt_msrvtt_caption_univl_baseline
+output_dir: ckpts/ckpt_youcook_caption_univl_baseline
 
 do_train: True
 do_pretrain: False
 do_eval: False
 
-task_type: caption
+task_type: retrieval
 epochs: 5
 batch_size: 2
 lr: 0.00005

@@ -1,4 +1,4 @@
-# Test runs on 1 GPU
+# Test runs on 4 GPUs
 
 CONFIG_PATH="conf/skynet"
 CONFIG_NAME="msrvtt_caption"

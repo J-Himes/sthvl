@@ -7,4 +7,9 @@ source ~/.bashrc
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate sthvl
 
-python -m torch.distributed.run --nproc_per_node=1 main_task_caption.py ${CONFIG_PATH} ${CONFIG_NAME}
+export RANK=0
+export WORLD_SIZE=1
+export MASTER_ADDR=0
+export MASTER_PORT=60000
+
+python main_task_caption.py ${CONFIG_PATH} ${CONFIG_NAME}

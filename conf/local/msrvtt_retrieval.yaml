@@ -10,7 +10,7 @@ do_train: True
 do_pretrain: False
 do_eval: False
 
-task_type: caption
+task_type: retrieval
 epochs: 5
 batch_size: 2
 lr: 0.00005
@@ -31,13 +31,14 @@ text_num_hidden_layers: 12
 visual_num_hidden_layers: 6
 cross_num_hidden_layers: 2
 decoder_num_hidden_layers: 3
+expand_msrvtt_sentences: True
 
 max_signal: 100
 n_pair: 1
 negative_weighting: 1
 hard_negative_rate: 0.5
 use_mil: True
-num_thread_reader: 4
+num_thread_reader: 16
 gradient_accumulation_steps: 1
 warmup_proportion: 0.1
 n_display: 100
