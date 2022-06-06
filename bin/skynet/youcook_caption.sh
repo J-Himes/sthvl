@@ -6,4 +6,4 @@ CONFIG_NAME="youcook_caption"
 source ~/.bashrc
 conda activate sthvl
 
-python -m torch.distributed.run --nproc_per_node=1 main_task_caption.py ${CONFIG_PATH} ${CONFIG_NAME}
+torchrun main_task_caption.py ${CONFIG_PATH} ${CONFIG_NAME}

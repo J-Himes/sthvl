@@ -3,7 +3,7 @@ train_csv: data/msrvtt/MSRVTT_train.9k.csv
 val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
 data_path: data/msrvtt/MSRVTT_data.json
 features_path: data/msrvtt/msrvtt_videos_features.pickle
-init_model: weight/univl.pretrained.bin
+init_model: weights/weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_msrvtt_caption_univl_baseline
 
 do_train: True
@@ -37,7 +37,7 @@ n_pair: 1
 negative_weighting: 1
 hard_negative_rate: 0.5
 use_mil: True
-num_thread_reader: 4
+num_thread_reader: 16
 gradient_accumulation_steps: 1
 warmup_proportion: 0.1
 n_display: 100

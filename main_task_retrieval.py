@@ -56,10 +56,10 @@ def set_seed_logger(args):
 
 def init_device(args, local_rank):
     global logger
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu", local_rank)
+ 
     gc.collect()
     torch.cuda.empty_cache()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu", local_rank)
     torch.cuda.set_per_process_memory_fraction(1.0, device)
 
     n_gpu = torch.cuda.device_count()
