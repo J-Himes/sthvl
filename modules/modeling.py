@@ -104,7 +104,7 @@ def update_attr(target_name, target_config, target_attr_name, source_config, sou
     return target_config
 
 def check_attr(target_name, task_config):
-    return hasattr(task_config, target_name) and task_config.__dict__[target_name]
+    return hasattr(task_config, target_name)
 
 class UniVL(UniVLPreTrainedModel):
     def __init__(self, bert_config, visual_config, cross_config, decoder_config, task_config):

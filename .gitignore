@@ -1,11 +1,16 @@
 # sthvl exceptions
+modules/bert-base-uncased
 modules/bert-base-uncased/
 weight/
 weight
+weights
+weights/
 data/
 data
 ckpts/
 ckpts
+outputs
+outputs/
 *.idea*
  
 # Byte-compiled / optimized / DLL files
