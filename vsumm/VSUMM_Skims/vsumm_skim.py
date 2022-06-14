@@ -2,10 +2,11 @@ import sys
 sys.path.append("../VSUMM")
 import os
 import scipy.io
+import cv2
+import pickle
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
-from get_video_feat import *
 
 # System Arguments
 # Argument 1: Location of the video
@@ -27,44 +28,30 @@ skim_length=1.8
 def main():
 	global sampling_rate, percent, skim_length
 	print("Opening Video!")
-	video=cv2.VideoCapture(os.path.abspath(os.path.expanduser(sys.argv[1])))
+	videos = pickle.load(open(sys.argv[1], 'rb'))
+	first_key = next(iter(videos))
+	frames = videos[first_key]
 	print("Video opened\nChoosing frames")
-	
-	fps=int(video.get(cv2.CAP_PROP_FPS))
-	frame_count=int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-	skim_frames_length=fps*skim_length
-	
-	frames = []
-	i=0
-	while(video.isOpened()):
-		if i%sampling_rate==0:
-			video.set(1,i)
-			# print(i)
-			ret, frame = video.read()
-			if frame is None :
-				break
-			#im = np.expand_dims(im, axis=0) #convert to (1, width, height, depth)
-			# print(frame.shape)
-			frames.append(np.asarray(frame))
-		i+=1
-	frames = np.array(frames)#convert to (num_frames, width, height, depth)
 	
 	print("Frames chosen")
 	print("Length of video %d" % frames.shape[0])
 	
 	# REPLACE WITH APPROPRIATE FEATURES
-	features=get_color_hist(frames,16)
+	features=frames
 	print("Shape of features: " + str(features.shape))
 
 	# clustering: defaults to using the features
 	print("Clustering")
 
 	# Choosing number of centers for clustering
+	frame_count = len(frames)
+	fps = 1
+	skim_frames_length = fps * skim_length
 	num_centroids=int(percent*frame_count/skim_frames_length/100)+1
 	print("Number of clusters: "+str(num_centroids))
 
-	#kmeans=KMeans(n_clusters=num_centroids).fit(features)
-	kmeans=GaussianMixture(n_components=num_centroids).fit(features)
+	kmeans=KMeans(n_clusters=num_centroids).fit(features)
+	# kmeans=GaussianMixture(n_components=num_centroids).fit(features)
 	print("Done Clustering!")
 	
 	centres=[]

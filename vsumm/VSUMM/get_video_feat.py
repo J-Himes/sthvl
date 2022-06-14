@@ -4,7 +4,7 @@ import cv2
 import random
 ''' PATHS ''' 
 HOMEVIDEOS='videos/'
-from vgg16 import VGG16
+from dataloaders.vgg16 import VGG16
 from keras.preprocessing import image
 from imagenet_utils import preprocess_input
 from keras.models import Model
