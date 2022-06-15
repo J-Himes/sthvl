@@ -2,7 +2,7 @@ datatype: msrvtt
 train_csv: data/msrvtt/MSRVTT_train.9k.csv
 val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
 data_path: data/msrvtt/MSRVTT_data.json
-features_path: data/msrvtt/msrvtt_videos_features_vsumm_skim_75.pickle
+features_path: data/msrvtt/summ/msrvtt_videos_features_vsumm_skim_75.pickle
 init_model: weights/weight/univl.pretrained.bin
 output_dir: ckpts/summ/ckpt_msrvtt_caption_vsumm_skim_75
 
