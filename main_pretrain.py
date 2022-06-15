@@ -12,6 +12,8 @@ from collections import OrderedDict
 import pickle
 import time
 import argparse
+import sys
+import hydra
 from modules.tokenization import BertTokenizer
 from modules.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 from modules.modeling import UniVL
@@ -358,7 +360,11 @@ def train_epoch(epoch, args, model, train_dataloader, device, n_gpu, optimizer, 
 
 def main():
     global logger
-    args = get_args()
+    # args = get_args()
+
+    hydra.initialize(config_path=sys.argv[1])
+    args = hydra.compose(config_name=sys.argv[2])
+
     args = set_seed_logger(args)
     device, n_gpu = init_device(args, args.local_rank)
 
