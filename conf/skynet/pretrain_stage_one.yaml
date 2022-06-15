@@ -1,7 +1,7 @@
 train_csv: data/data/HowTo100M.csv
 data_path: data/data/caption.pickle
 features_path: data/data/HowTo100M/howto100m_s3d_features
-init_model: None
+init_model: False
 output_dir: models/pre_trained/L48_V6_D3_Phase1
 
 do_train: False
@@ -48,7 +48,6 @@ n_gpu: 1
 local_rank: 0
 world_size: 0
 
-stage_two: False
 pretrain_enhance_vmodal: False
 seed: 42
 
