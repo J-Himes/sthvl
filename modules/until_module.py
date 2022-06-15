@@ -196,7 +196,7 @@ class MILNCELoss(nn.Module):
         self.batch_size = batch_size
         self.n_pair = n_pair
         torch_v = float(".".join(torch.__version__.split(".")[:2]))
-        self.bool_dtype = torch.bool if torch_v >= 1.3 else torch.uint8
+        self.bool_dtype = torch.bool if torch_v >= 1.3 else torch.bool
 
     def forward(self, sim_matrix):
         mm_mask = np.eye(self.batch_size)
