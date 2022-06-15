@@ -1,6 +1,6 @@
 # Test runs on 4 GPUs
 
-CONFIG_PATH="conf/skynet"
+CONFIG_PATH="conf/skynet/summ"
 CONFIG_NAME="msrvtt_caption_naive_25"
 
 source ~/.bashrc
