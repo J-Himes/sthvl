@@ -10,13 +10,13 @@ yes | pip install hydra-core --upgrade
 yes | pip install git+https://github.com/Maluuba/nlg-eval.git@master
 conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch --yes
 conda install h5py --yes
-python -m pip install --upgrade --user ortools --yes
+python -m pip install --upgrade --user ortools
 
-pip install opencv-python --yes
-pip install torch-scatter -f https://data.pyg.org/whl/torch-1.10.2+cu113.html --yes
-pip install torch-sparse -f https://data.pyg.org/whl/torch-1.10.2+cu113.html --yes
-pip install torch-cluster -f https://data.pyg.org/whl/torch-1.10.2+cu113.html --yes
-pip install torch-geometric --yes
+pip install opencv-python
+pip install torch-scatter -f https://data.pyg.org/whl/torch-1.10.2+cu113.html
+pip install torch-sparse -f https://data.pyg.org/whl/torch-1.10.2+cu113.html
+pip install torch-cluster -f https://data.pyg.org/whl/torch-1.10.2+cu113.html
+pip install torch-geometric
 
 mkdir -p datasets/ && cd datasets/
 wget https://www.dropbox.com/s/tdknvkpz1jp6iuz/dsnet_datasets.zip
@@ -34,12 +34,10 @@ unzip pretrain_af_basic.zip
 rm pretrain_af_basic.zip
 
 cd ..
-cd src
-
-echo Testing evaluation with pretrained models.
-python evaluate.py anchor-based --model-dir ../models/pretrain_ab_basic/ --splits ../splits/tvsum.yml ../splits/summe.yml
-python evaluate.py anchor-free --model-dir ../models/pretrain_af_basic/ --splits ../splits/tvsum.yml ../splits/summe.yml --nms-thresh 0.4
-
-echo Testing training with anchor-based model. Please cancel task once the epochs start.
-python train.py anchor-based --model-dir ../models/ab_basic --splits ../splits/tvsum.yml ../splits/summe.yml
-
+echo
+echo To test setup, move to the src directory.
+echo
+echo From src, run ./test_eval.sh to test evaluation on pre-trained models.
+echo
+echo Then run ./test_training.sh to test anchor-based training.
+echo
