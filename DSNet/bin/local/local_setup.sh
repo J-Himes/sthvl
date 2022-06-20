@@ -37,7 +37,7 @@ cd ..
 echo
 echo To test setup, move to the src directory.
 echo
-echo From src, run ./test_eval.sh to test evaluation on pre-trained models.
+echo From src, run ./test_local_eval.sh to test evaluation on pre-trained models.
 echo
-echo Then run ./test_training.sh to test anchor-based training.
+echo Then run ./test_local_training.sh to test anchor-based training.
 echo
