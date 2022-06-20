@@ -1,3 +1,5 @@
+# Make sure to run this file from the src directory
+
 source ~/.bashrc
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate dsnet
