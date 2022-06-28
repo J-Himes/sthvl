@@ -21,7 +21,14 @@ def main():
         elif summ_type == 'sampling':
             frames = len(feature_dict[key])
             selected_frames = np.arange(frames)
-            selected_frames = selected_frames[selected_frames % 2 == 0]
+            if percent != 75:
+                rate = percent / 100
+                selected_frames = selected_frames[selected_frames * rate == (selected_frames * rate).astype(int)]
+            else:
+                rate = 0.25
+                selected_frames = selected_frames[selected_frames * rate == (selected_frames * rate).astype(int)]
+                selected_frames = np.delete(indices, selected_frames)
+            selected_frames = selected_frames[selected_frames % rate == 0]
         elif summ_type == 'vsumm_key':
             selected_frames = vsumm(feature_dict[key], 1, percent)
         elif summ_type == 'vsumm_skim':

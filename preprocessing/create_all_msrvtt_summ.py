@@ -11,7 +11,7 @@ def main():
     features_path = sys.argv[1]
     output_pathfile_template = '../data/msrvtt/summ/msrvtt_videos_features'
 
-    summ_types = ['naive', 'sampling', 'vsumm_key', 'vsumm_skim']
+    summ_types = ['sampling', 'vsumm_key', 'vsumm_skim']
     percents = [10, 25, 50, 75]
     for summ_type in tqdm(summ_types):
         print(summ_type)
@@ -31,7 +31,13 @@ def main():
                 elif summ_type == 'sampling':
                     frames = len(feature_dict[key])
                     selected_frames = np.arange(frames)
-                    selected_frames = selected_frames[selected_frames % 2 == 0]
+                    if percent != 75:
+                        rate = percent/100
+                        selected_frames = selected_frames[selected_frames * rate == (selected_frames * rate).astype(int)]
+                    else:
+                        rate = 0.25
+                        selected_frames = selected_frames[selected_frames * rate == (selected_frames * rate).astype(int)]
+                        selected_frames = np.delete(indices, selected_frames)
                 elif summ_type == 'vsumm_key':
                     selected_frames = vsumm(feature_dict[key], 1, percent)
                 elif summ_type == 'vsumm_skim':
