@@ -18,6 +18,10 @@ def main():
             frames = len(feature_dict[key])
             count = int(frames * (percent / 100))
             selected_frames = random.sample(indices, count)
+        elif summ_type == 'sampling':
+            frames = len(feature_dict[key])
+            selected_frames = np.arange(frames)
+            selected_frames = selected_frames[selected_frames % 2 == 0]
         elif summ_type == 'vsumm_key':
             selected_frames = vsumm(feature_dict[key], 1, percent)
         elif summ_type == 'vsumm_skim':
