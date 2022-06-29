@@ -8,8 +8,8 @@ from vsumm.vsumm_skim import vsumm_skim
 from tqdm import tqdm
 
 def main():
-    features_path = sys.argv[1] # ../data/msrvtt/msrvtt_videos_features.pickle
-    output_pathfile_template = '../data/msrvtt/summ/msrvtt_videos_features'
+    features_path = sys.argv[1] # ../data/youcookii/youcookii_videos_features.pickle
+    output_pathfile_template = '../data/youcookii/summ/youcook_videos_features'
 
     summ_types = ['sampling', 'vsumm_key', 'vsumm_skim']
     percents = [10, 25, 50, 75]
@@ -26,7 +26,7 @@ def main():
                 indices = list(range(len(feature_dict[key])))
                 if summ_type == 'naive':
                     frames = len(feature_dict[key])
-                    count = int(frames * (percent / 100))
+                    count = frames * (percent / 100)
                     selected_frames = random.sample(indices, count)
                 elif summ_type == 'sampling':
                     frames = len(feature_dict[key])
