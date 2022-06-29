@@ -2,9 +2,9 @@ datatype: youcook
 train_csv: data/youcookii/youcookii_train.csv
 val_csv: data/youcookii/youcookii_val.csv
 data_path: data/youcookii/youcookii_data.no_transcript.pickle
-features_path: data/youcookii/youcookii_videos_features_sampling_50.pickle
+features_path: data/youcookii/summ/youcookii_videos_features_sampling_50.pickle
 init_model: weights/weight/univl.pretrained.bin
-output_dir: ckpts/ckpt_youcook_caption_sampling_50
+output_dir: ckpts/summ/ckpt_youcook_caption_sampling_50
 
 do_train: True
 do_pretrain: False
