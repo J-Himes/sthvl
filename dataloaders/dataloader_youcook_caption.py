@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from torch.utils.data import Dataset
+from vsumm.vsumm import vsumm
+from vsumm.vsumm_skim import vsumm_skim
 import pandas as pd
 import os
 import numpy as np
@@ -23,6 +25,7 @@ class Youcook_Caption_DataLoader(Dataset):
             feature_framerate=1.0,
             max_words=30,
             max_frames=100,
+            summ_type=None
     ):
         """
         Args:
@@ -34,6 +37,7 @@ class Youcook_Caption_DataLoader(Dataset):
         self.max_words = max_words
         self.max_frames = max_frames
         self.tokenizer = tokenizer
+        self.summ_type=summ_type
 
         self.feature_size = self.feature_dict[self.csv["feature_file"].values[0]].shape[-1]
 
@@ -174,6 +178,29 @@ class Youcook_Caption_DataLoader(Dataset):
             start = int(s[i] * self.feature_framerate)
             end = int(e[i] * self.feature_framerate) + 1
             video_slice = video_features[start:end]
+
+            percent = 50
+            indices = list(range(len(video_slice)))
+            if self.summ_type == None:
+                break
+            elif self.summ_type == 'sampling':
+                frames = len(video_slice)
+                selected_frames = np.arange(frames)
+                if percent != 75:
+                    rate = percent / 100
+                    selected_frames = selected_frames[
+                        selected_frames * rate == (selected_frames * rate).astype(int)]
+                else:
+                    rate = 0.25
+                    selected_frames = selected_frames[
+                        selected_frames * rate == (selected_frames * rate).astype(int)]
+                    selected_frames = np.delete(indices, selected_frames)
+            elif self.summ_type == 'vsumm_key':
+                selected_frames = vsumm(video_slice, 1, percent)
+            elif self.summ_type == 'vsumm_skim':
+                selected_frames = vsumm_skim(video_slice, 1, percent)
+            deleted_frames = [x for x in indices if x not in selected_frames]
+            video_slice = np.delete(video_slice, deleted_frames, axis=0)
 
             if self.max_frames < video_slice.shape[0]:
                 video_slice = video_slice[:self.max_frames]

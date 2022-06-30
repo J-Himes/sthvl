@@ -2,7 +2,7 @@ datatype: youcook
 train_csv: data/youcookii/youcookii_train.csv
 val_csv: data/youcookii/youcookii_val.csv
 data_path: data/youcookii/youcookii_data.no_transcript.pickle
-features_path: data/youcookii/summ/youcook_videos_features_vsumm_skim_50.pickle
+features_path: data/youcookii/summ/youcookii_videos_features.pickle
 init_model: weights/weight/univl.pretrained.bin
 output_dir: ckpts/summ/ckpt_youcook_retrieval_vsumm_skim_50
 
@@ -11,6 +11,7 @@ do_pretrain: False
 do_eval: False
 
 task_type: retrieval
+summ_type: vsumm_skim
 epochs: 5
 batch_size: 32
 lr: 0.00005
