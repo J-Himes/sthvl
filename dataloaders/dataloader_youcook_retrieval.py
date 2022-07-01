@@ -148,9 +148,7 @@ class Youcook_DataLoader(Dataset):
 
             percent = 50
             indices = list(range(len(video_slice)))
-            if self.summ_type == None:
-                break
-            elif self.summ_type == 'sampling':
+            if self.summ_type == 'sampling':
                 frames = len(video_slice)
                 selected_frames = np.arange(frames)
                 if percent != 75:
@@ -166,8 +164,9 @@ class Youcook_DataLoader(Dataset):
                 selected_frames = vsumm(video_slice, 1, percent)
             elif self.summ_type == 'vsumm_skim':
                 selected_frames = vsumm_skim(video_slice, 1, percent)
-            deleted_frames = [x for x in indices if x not in selected_frames]
-            video_slice = np.delete(video_slice, deleted_frames, axis=0)
+            if self.summ_type != None:
+                deleted_frames = [x for x in indices if x not in selected_frames]
+                video_slice = np.delete(video_slice, deleted_frames, axis=0)
 
             if self.max_frames < video_slice.shape[0]:
                 video_slice = video_slice[:self.max_frames]
