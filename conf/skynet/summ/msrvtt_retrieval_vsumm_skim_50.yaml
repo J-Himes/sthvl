@@ -11,6 +11,7 @@ do_pretrain: False
 do_eval: False
 
 task_type: retrieval
+summ_type: vsumm_skim
 epochs: 5
 batch_size: 64
 lr: 0.00005

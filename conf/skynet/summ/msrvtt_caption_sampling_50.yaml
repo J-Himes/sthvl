@@ -11,6 +11,7 @@ do_pretrain: False
 do_eval: False
 
 task_type: caption
+summ_type: sampling
 epochs: 5
 batch_size: 128
 lr: 0.00005
