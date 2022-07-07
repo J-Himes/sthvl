@@ -166,7 +166,7 @@ def dataloader_youcook_test(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=args.summ_type
+        summ_type=None
     )
 
     test_sampler = SequentialSampler(youcook_testset)
@@ -218,7 +218,7 @@ def dataloader_msrvtt_test(args, tokenizer, split_type="test",):
         tokenizer=tokenizer,
         max_frames=args.max_frames,
         split_type=split_type,
-        summ_type=None
+        summ_type=args.summ_type
     )
 
     test_sampler = SequentialSampler(msrvtt_testset)
