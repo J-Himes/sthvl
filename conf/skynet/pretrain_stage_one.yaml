@@ -1,5 +1,5 @@
-train_csv: data/data/HowTo100M.csv
-data_path: data/data/caption.pickle
+train_csv: data/howto100m/debug/HowTo100M_one_thousandth.csv
+data_path: data/howto100m/debug/caption_one_thousandth.pickle
 features_path: data/data/HowTo100M/howto100m_s3d_features
 init_model: False
 output_dir: models/pre_trained/L48_V6_D3_Phase1
@@ -9,8 +9,9 @@ do_pretrain: True
 do_eval: False
 
 task_type: pretrain
+summ_type: sampling
 epochs: 50
-batch_size: 1920
+batch_size: 344
 lr: 0.0001
 coef_lr: 0.1
 margin: 0.1

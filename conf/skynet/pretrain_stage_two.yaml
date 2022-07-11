@@ -9,15 +9,16 @@ do_pretrain: True
 do_eval: False
 
 task_type: pretrain
+summ_type: sampling
 epochs: 50
-batch_size: 960
+batch_size: 80
 lr: 0.0001
 coef_lr: 0.1
 margin: 0.1
 min_words: 0
 max_words: 48
 max_frames: 64
-batch_size_val: 344
+batch_size_val: 80
 video_dim: 1024
 feature_framerate: 1
 min_time: 5.0
