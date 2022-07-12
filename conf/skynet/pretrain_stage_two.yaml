@@ -1,8 +1,8 @@
-train_csv: data/data/HowTo100M.csv
-data_path: data/data/caption.pickle
+train_csv: data/data/HowTo100M/pretrain_data/HowTo100M_6_25.csv
+data_path: data/data/HowTo100M/pretrain_data/caption_6_25.pickle
 features_path: data/data/HowTo100M/howto100m_s3d_features
-init_model: <from first stage>
-output_dir: models/pre_trained/L48_V6_D3_Phase2
+init_model: models/pre_trained_sampling_6_25/L48_V6_D3_Phase1/pytorch_model.bin.pretrain.49
+output_dir: models/pre_trained_sampling_6_25/L48_V6_D3_Phase2
 
 do_train: False
 do_pretrain: True
