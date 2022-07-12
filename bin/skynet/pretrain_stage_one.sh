@@ -4,6 +4,6 @@ CONFIG_PATH="conf/skynet"
 CONFIG_NAME="pretrain_stage_one"
 
 source ~/.bashrc
-conda activate sthvl
+conda activate sthvl_hydra
 
 torchrun main_pretrain.py ${CONFIG_PATH} ${CONFIG_NAME}

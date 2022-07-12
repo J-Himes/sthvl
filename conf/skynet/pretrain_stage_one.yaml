@@ -1,8 +1,8 @@
-train_csv: data/howto100m/debug/HowTo100M_one_thousandth.csv
-data_path: data/howto100m/debug/caption_one_thousandth.pickle
+train_csv: data/data/HowTo100M/pretrain_data/HowTo100M_6_25.csv
+data_path: data/data/HowTo100M/pretrain_data/caption_6_25.pickle
 features_path: data/data/HowTo100M/howto100m_s3d_features
 init_model: False
-output_dir: models/pre_trained/L48_V6_D3_Phase1
+output_dir: models/pre_trained_sampling_6_25/L48_V6_D3_Phase1
 
 do_train: False
 do_pretrain: True
