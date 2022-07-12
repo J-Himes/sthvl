@@ -131,6 +131,7 @@ def dataloader_youcook_train(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
+        summ_type=args.summ_type
     )
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(youcook_dataset)
@@ -155,6 +156,7 @@ def dataloader_youcook_test(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
+        summ_type=None
     )
 
     test_sampler = SequentialSampler(youcook_testset)
@@ -179,6 +181,7 @@ def dataloader_msrvtt_train(args, tokenizer):
         tokenizer=tokenizer,
         max_frames=args.max_frames,
         unfold_sentences=args.expand_msrvtt_sentences,
+        summ_type=args.summ_type
     )
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(msrvtt_dataset)
@@ -202,6 +205,7 @@ def dataloader_msrvtt_test(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
+        summ_type=None
     )
     dataloader_msrvtt = DataLoader(
         msrvtt_testset,

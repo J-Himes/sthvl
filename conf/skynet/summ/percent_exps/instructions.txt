@@ -1,0 +1,1 @@
+These configs were run in the conf/skynet/summ directory and have been archieved in the percent_exps directory.

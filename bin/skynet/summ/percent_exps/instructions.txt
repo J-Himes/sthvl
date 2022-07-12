@@ -1,0 +1,1 @@
+These experiments were run in the bin/skynet/summ directory and have been archieved in the percent_exps directory.

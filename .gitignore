@@ -12,6 +12,7 @@ ckpts
 outputs
 outputs/
 *.idea*
+data_sizes.txt
  
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -5,6 +5,8 @@ from __future__ import print_function
 
 import os
 from torch.utils.data import Dataset
+from vsumm.vsumm import vsumm
+from vsumm.vsumm_skim import vsumm_skim
 import numpy as np
 import pickle
 import pandas as pd
@@ -23,7 +25,8 @@ class MSRVTT_Caption_DataLoader(Dataset):
             max_words=30,
             feature_framerate=1.0,
             max_frames=100,
-            split_type=""
+            split_type="",
+            summ_type=None
     ):
         self.csv = pd.read_csv(csv_path)
         self.data = json.load(open(json_path, 'r'))
@@ -32,6 +35,7 @@ class MSRVTT_Caption_DataLoader(Dataset):
         self.max_words = max_words
         self.max_frames = max_frames
         self.tokenizer = tokenizer
+        self.summ_type=summ_type
 
         self.feature_size = self.feature_dict[self.csv['video_id'].values[0]].shape[-1]
 
@@ -180,6 +184,28 @@ class MSRVTT_Caption_DataLoader(Dataset):
         video = np.zeros((len(choice_video_ids), self.max_frames, self.feature_size), dtype=np.float)
         for i, video_id in enumerate(choice_video_ids):
             video_slice = self.feature_dict[video_id]
+
+            percent = 50
+            indices = list(range(len(video_slice)))
+            if self.summ_type == 'sampling':
+                frames = len(video_slice)
+                selected_frames = np.arange(frames)
+                if percent != 75:
+                    rate = percent / 100
+                    selected_frames = selected_frames[
+                        selected_frames * rate == (selected_frames * rate).astype(int)]
+                else:
+                    rate = 0.25
+                    selected_frames = selected_frames[
+                        selected_frames * rate == (selected_frames * rate).astype(int)]
+                    selected_frames = np.delete(indices, selected_frames)
+            elif self.summ_type == 'vsumm_key':
+                selected_frames = vsumm(video_slice, 1, percent)
+            elif self.summ_type == 'vsumm_skim':
+                selected_frames = vsumm_skim(video_slice, 1, percent)
+            if self.summ_type != None:
+                deleted_frames = [x for x in indices if x not in selected_frames]
+                video_slice = np.delete(video_slice, deleted_frames, axis=0)
 
             if self.max_frames < video_slice.shape[0]:
                 video_slice = video_slice[:self.max_frames]
