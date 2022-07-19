@@ -5,8 +5,8 @@ import torch
 import os
 
 def main():
-    feature_dirs = glob('data/Charades_v1_features_rgb/*', recursive=True)
-    new_features_dir = 'data/Charades_v1_features_rgb_1024/'
+    feature_dirs = glob('data/charades/Charades_v1_features_rgb/*', recursive=True)
+    new_features_dir = 'data/charades_pkl/Charades_v1_features_rgb_1024/'
     if not os.path.exists(new_features_dir):
         os.makedirs(new_features_dir)
 
