@@ -1,16 +1,16 @@
-datatype: msrvtt
-train_csv: data/msrvtt/MSRVTT_train.9k.csv
-val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
+datatype: charades
+train_csv: data/Charades_v1_features_rgb/Charades_v1_test.csv
+val_csv: data/Charades_v1_features_rgb/Charades_v1_test.csv
 data_path: data/msrvtt/MSRVTT_data.json
-features_path: data/msrvtt/msrvtt_videos_features.pickle
+features_path: data/Charades_v1_features_rgb
 init_model: weight/univl.pretrained.bin
-output_dir: ckpts/ckpt_msrvtt_caption_univl_baseline
+output_dir: ckpts/ckpt_charades_localization_univl_baseline
 
 do_train: True
 do_pretrain: False
 do_eval: False
 
-task_type: caption
+task_type: localization
 summ_type: None
 epochs: 5
 batch_size: 2
