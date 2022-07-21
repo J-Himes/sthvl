@@ -203,7 +203,7 @@ class MSRVTT_Caption_DataLoader(Dataset):
                 selected_frames = vsumm(video_slice, 1, percent)
             elif self.summ_type == 'vsumm_skim':
                 selected_frames = vsumm_skim(video_slice, 1, percent)
-            if self.summ_type != None:
+            if self.summ_type != 'None':
                 deleted_frames = [x for x in indices if x not in selected_frames]
                 video_slice = np.delete(video_slice, deleted_frames, axis=0)
 

@@ -30,8 +30,6 @@ class Charades_Localization_DataLoader(Dataset):
             summ_type=None
     ):
 
-        # fc7 = np.loadtxt('data/Charades_v1_features_rgb/0A8CF/0A8CF-000001.txt')
-
         self.csv = pd.read_csv(csv_path)
         self.data = json.load(open(json_path, 'r'))
         path_cmd = features_path + '/*'
@@ -46,6 +44,7 @@ class Charades_Localization_DataLoader(Dataset):
 
         assert split_type in ["train", "val", "test"]
         video_ids = [self.feature_dict[idx][-5:] for idx in range(len(self.feature_dict))]
+        self.feature_dict = dict(zip(video_ids, self.feature_dict))
         choiced_video_ids = list(self.csv['id'])
 
         self.sample_len = 0
@@ -175,7 +174,8 @@ class Charades_Localization_DataLoader(Dataset):
 
         video = np.zeros((len(choice_video_ids), self.max_frames, self.feature_size), dtype=np.float)
         for i, video_id in enumerate(choice_video_ids):
-            video_slice = self.feature_dict[video_id]
+            load_path = self.feature_dict[video_id] + '/' + self.feature_dict[video_id][-5:] + '.npy'
+            video_slice = np.load(load_path)
 
             percent = 50
             indices = list(range(len(video_slice)))
@@ -195,7 +195,7 @@ class Charades_Localization_DataLoader(Dataset):
                 selected_frames = vsumm(video_slice, 1, percent)
             elif self.summ_type == 'vsumm_skim':
                 selected_frames = vsumm_skim(video_slice, 1, percent)
-            if self.summ_type != None:
+            if self.summ_type != 'None':
                 deleted_frames = [x for x in indices if x not in selected_frames]
                 video_slice = np.delete(video_slice, deleted_frames, axis=0)
 

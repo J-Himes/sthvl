@@ -518,7 +518,7 @@ def main():
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
     model = init_model(args, device, n_gpu, args.local_rank)
 
-    assert args.task_type == "localization"
+    # assert args.task_type == "localization"
     nlgEvalObj = NLGEval(no_overlap=False, no_skipthoughts=True, no_glove=True, metrics_to_omit=None)
 
     assert args.datatype in DATALOADER_DICT

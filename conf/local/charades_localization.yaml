@@ -2,7 +2,7 @@ datatype: charades
 train_csv: data/Charades_v1_features_rgb/Charades_v1_test.csv
 val_csv: data/Charades_v1_features_rgb/Charades_v1_test.csv
 data_path: data/msrvtt/MSRVTT_data.json
-features_path: data/Charades_v1_features_rgb
+features_path: data/Charades_v1_features_rgb_1024
 init_model: weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_charades_localization_univl_baseline
 
@@ -10,7 +10,8 @@ do_train: True
 do_pretrain: False
 do_eval: False
 
-task_type: localization
+#task_type: localization
+task_type: caption
 summ_type: None
 epochs: 5
 batch_size: 2
