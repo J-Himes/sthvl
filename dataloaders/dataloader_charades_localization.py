@@ -15,6 +15,35 @@ import json
 import random
 from glob import glob
 
+def make_dataset(data, choiced_video_ids, feature_dict, num_classes=157):
+    dataset = []
+
+    i = 0
+    pop_list = []
+    for vid in choiced_video_ids:
+
+        load_path = feature_dict[vid] + '/' + feature_dict[vid][-5:] + '.npy'
+        try:
+            video_slice = np.load(load_path)
+        except:
+            pop_list.append([i, vid])
+            i += 1
+            continue
+        num_frames = len(video_slice)
+
+        label = np.zeros((num_classes, num_frames), np.float32)
+
+        fps = num_frames / data[vid]['duration']
+        for ann in data[vid]['actions']:
+            for fr in range(0, num_frames, 1):
+                if fr / fps > ann[1] and fr / fps < ann[2]:
+                    label[ann[0], fr] = 1  # binary classification
+        dataset.append((vid, label, data[vid]['duration'], num_frames))
+        i += 1
+
+    return dataset, pop_list
+
+
 class Charades_Localization_DataLoader(Dataset):
     """Charades train dataset loader."""
     def __init__(
@@ -29,7 +58,6 @@ class Charades_Localization_DataLoader(Dataset):
             split_type="",
             summ_type=None
     ):
-
         self.csv = pd.read_csv(csv_path)
         self.data = json.load(open(json_path, 'r'))
         path_cmd = features_path + '/*'
@@ -45,15 +73,28 @@ class Charades_Localization_DataLoader(Dataset):
         assert split_type in ["train", "val", "test"]
         video_ids = [self.feature_dict[idx][-5:] for idx in range(len(self.feature_dict))]
         self.feature_dict = dict(zip(video_ids, self.feature_dict))
-        choiced_video_ids = list(self.csv['id'])
+        choiced_video_ids = []
+        for key, value in self.data.items():
+            if value['subset'][:len(split_type)] == split_type:
+                choiced_video_ids.append(key)
+
+        self.labels, pop_list = make_dataset(self.data, choiced_video_ids, self.feature_dict, num_classes=157)
+        for key in pop_list:
+            choiced_video_ids.pop(key[0])
 
         self.sample_len = 0
         self.sentences_dict = {}
         self.video_sentences_dict = defaultdict(list)
-        for index, row in self.csv.iterrows():
-            if row['id'] in choiced_video_ids:
-                self.sentences_dict[len(self.sentences_dict)] = (row['id'], row['descriptions'])
-                self.video_sentences_dict[row['id']].append(row['descriptions'])
+        i = 0
+        for key in choiced_video_ids:
+            csv_value = self.csv.loc[self.csv['id'] == key]
+            try:
+                description = csv_value['descriptions'].values[0]
+            except:
+                continue
+            self.sentences_dict[i] = (key, description)
+            self.video_sentences_dict[key].append(description)
+            i += 1
 
         self.sample_len = len(self.sentences_dict)
 
@@ -234,6 +275,7 @@ class Charades_Localization_DataLoader(Dataset):
 
     def __getitem__(self, idx):
         video_id, caption = self.sentences_dict[idx]
+        label = self.labels[idx]
 
         pairs_text, pairs_mask, pairs_segment, \
         pairs_masked_text, pairs_token_labels, \
@@ -241,7 +283,8 @@ class Charades_Localization_DataLoader(Dataset):
         pairs_output_caption_ids, choice_video_ids = self._get_text(video_id, caption)
 
         video, video_mask, masked_video, video_labels_index = self._get_video(choice_video_ids)
+        label = label[1][:, :video.shape[1]]
 
         return pairs_text, pairs_mask, pairs_segment, video, video_mask, \
                pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \
-               pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids
+               pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids, label

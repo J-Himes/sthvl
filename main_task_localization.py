@@ -92,7 +92,7 @@ def init_model(args, device, n_gpu, local_rank):
     # Prepare model
     cache_dir = args.cache_dir if args.cache_dir else os.path.join(str(PYTORCH_PRETRAINED_BERT_CACHE), 'distributed')
     model = UniVL.from_pretrained(args.bert_model, args.visual_model, args.cross_model, args.decoder_model,
-                                   cache_dir=cache_dir, state_dict=model_state_dict, task_config=args)
+                                   cache_dir=cache_dir, state_dict=model_state_dict, task_config=args, max_frames=args.max_frames)
 
     model.to(device)
 
@@ -238,13 +238,13 @@ def train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, 
 
         input_ids, input_mask, segment_ids, video, video_mask, \
         pairs_masked_text, pairs_token_labels, masked_video, video_labels_index,\
-        pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids = batch
+        pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids, label = batch
 
         loss = model(input_ids, segment_ids, input_mask, video, video_mask,
                      pairs_masked_text=pairs_masked_text, pairs_token_labels=pairs_token_labels,
                      masked_video=masked_video, video_labels_index=video_labels_index,
                      input_caption_ids=pairs_input_caption_ids, decoder_mask=pairs_decoder_mask,
-                     output_caption_ids=pairs_output_caption_ids)
+                     output_caption_ids=pairs_output_caption_ids, label=label)
 
         if n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu.

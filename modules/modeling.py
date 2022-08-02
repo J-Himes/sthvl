@@ -32,6 +32,7 @@ from modules.module_bert import BertModel, BertConfig, BertOnlyMLMHead
 from modules.module_visual import VisualModel, VisualConfig, VisualOnlyMLMHead
 from modules.module_cross import CrossModel, CrossConfig
 from modules.module_decoder import DecoderModel, DecoderConfig
+from modules.module_linear import LinearModel
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,7 @@ class UniVLPreTrainedModel(PreTrainedModel, nn.Module):
         self.visual = None
         self.cross = None
         self.decoder = None
+        self.linear = None
 
     @classmethod
     def from_pretrained(cls, pretrained_bert_name, visual_model_name, cross_model_name, decoder_model_name,
@@ -107,7 +109,7 @@ def check_attr(target_name, task_config):
     return hasattr(task_config, target_name)
 
 class UniVL(UniVLPreTrainedModel):
-    def __init__(self, bert_config, visual_config, cross_config, decoder_config, task_config):
+    def __init__(self, bert_config, visual_config, cross_config, decoder_config, task_config, max_frames):
         super(UniVL, self).__init__(bert_config, visual_config, cross_config, decoder_config)
         self.task_config = task_config
         self.ignore_video_index = -1
@@ -144,6 +146,9 @@ class UniVL(UniVLPreTrainedModel):
         self.visual = VisualModel(visual_config)
         visual_word_embeddings_weight = self.visual.embeddings.word_embeddings.weight
         # <=== End of Video Encoder
+
+        self.linear = LinearModel(visual_config, max_frames)
+        self.linear_loss_fct = CrossEntropyLoss()
 
         if self._stage_one is False or self.train_sim_after_cross:
             # Cross Encoder ===>
@@ -187,7 +192,7 @@ class UniVL(UniVLPreTrainedModel):
 
     def forward(self, input_ids, token_type_ids, attention_mask, video, video_mask=None,
                 pairs_masked_text=None, pairs_token_labels=None, masked_video=None, video_labels_index=None,
-                input_caption_ids=None, decoder_mask=None, output_caption_ids=None):
+                input_caption_ids=None, decoder_mask=None, output_caption_ids=None, label=None):
 
         input_ids = input_ids.view(-1, input_ids.shape[-1])
         token_type_ids = token_type_ids.view(-1, token_type_ids.shape[-1])
@@ -265,6 +270,12 @@ class UniVL(UniVLPreTrainedModel):
 
                     sim_loss_text_visual = self.loss_fct(sim_matrix_text_visual)
                     loss += sim_loss_text_visual
+
+                if self.task_config.task_type == 'localization':
+                    for i in range(len(sequence_output)):
+                        fused_embeddings = torch.cat((sequence_output[i], visual_output[i]), 0)
+                        output = self.linear(fused_embeddings.view(-1))
+                        loss += self.linear_loss_fct(output, label[i])
 
             return loss
         else:

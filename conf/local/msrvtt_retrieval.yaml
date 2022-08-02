@@ -6,12 +6,12 @@ features_path: data/msrvtt/msrvtt_videos_features.pickle
 init_model: weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_msrvtt_caption_univl_baseline
 
-do_train: True
+do_train: False
 do_pretrain: False
-do_eval: False
+do_eval: True
 
 task_type: retrieval
-summ_type: sampling
+summ_type: 'None'
 epochs: 5
 batch_size: 2
 lr: 0.00005
