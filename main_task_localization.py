@@ -381,127 +381,33 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
     if model._stage_one:
         return 0.
 
-    all_result_lists = []
-    all_caption_lists = []
     model.eval()
+    total_acc, total_eval = 0, 0
     for batch in test_dataloader:
         batch = tuple(t.to(device, non_blocking=True) for t in batch)
 
         input_ids, input_mask, segment_ids, video, video_mask, \
         pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \
-        pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids = batch
+        pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids, label = batch
 
         with torch.no_grad():
             sequence_output, visual_output = model.get_sequence_visual_output(input_ids, segment_ids, input_mask, video, video_mask)
-            # -- Repeat data for beam search
-            n_bm = 5 # beam_size
-            device = sequence_output.device
-            n_inst, len_s, d_h = sequence_output.size()
-            _, len_v, v_h = visual_output.size()
+            for i in range(len(sequence_output)):
+                fused_embeddings = torch.cat((sequence_output[i], visual_output[i]), 0)
+                output = model.linear(fused_embeddings.view(-1))
+                output = torch.round(output)
+                total_frames = output.shape[0] * output.shape[1]
+                diff = torch.sum(torch.abs(torch.sub(output, label[i])))
+                acc = (total_frames - diff) / total_frames
+                total_acc += acc
+                total_eval += 1
 
-            decoder = model.decoder_caption
-
-            # Note: shaped first, then decoder need the parameter shaped=True
-            input_ids = input_ids.view(-1, input_ids.shape[-1])
-            input_mask = input_mask.view(-1, input_mask.shape[-1])
-            video_mask = video_mask.view(-1, video_mask.shape[-1])
-
-            sequence_output_rpt = sequence_output.repeat(1, n_bm, 1).view(n_inst * n_bm, len_s, d_h)
-            visual_output_rpt = visual_output.repeat(1, n_bm, 1).view(n_inst * n_bm, len_v, v_h)
-            input_ids_rpt = input_ids.repeat(1, n_bm).view(n_inst * n_bm, len_s)
-            input_mask_rpt = input_mask.repeat(1, n_bm).view(n_inst * n_bm, len_s)
-            video_mask_rpt = video_mask.repeat(1, n_bm).view(n_inst * n_bm, len_v)
-
-            # -- Prepare beams
-            inst_dec_beams = [Beam(n_bm, device=device, tokenizer=tokenizer) for _ in range(n_inst)]
-            # -- Bookkeeping for active or not
-            active_inst_idx_list = list(range(n_inst))
-            inst_idx_to_position_map = get_inst_idx_to_tensor_position_map(active_inst_idx_list)
-            # -- Decode
-            for len_dec_seq in range(1, args.max_words + 1):
-                active_inst_idx_list = beam_decode_step(decoder, inst_dec_beams,
-                                                        len_dec_seq, inst_idx_to_position_map, n_bm, device,
-                                                        (sequence_output_rpt, visual_output_rpt, input_ids_rpt, input_mask_rpt, video_mask_rpt))
-
-                if not active_inst_idx_list:
-                    break  # all instances have finished their path to <EOS>
-
-                (sequence_output_rpt, visual_output_rpt, input_ids_rpt, input_mask_rpt, video_mask_rpt), \
-                inst_idx_to_position_map = collate_active_info((sequence_output_rpt, visual_output_rpt, input_ids_rpt, input_mask_rpt, video_mask_rpt),
-                                                               inst_idx_to_position_map, active_inst_idx_list, n_bm, device)
-
-            batch_hyp, batch_scores = collect_hypothesis_and_scores(inst_dec_beams, 1)
-            result_list = [batch_hyp[i][0] for i in range(n_inst)]
-
-            pairs_output_caption_ids = pairs_output_caption_ids.view(-1, pairs_output_caption_ids.shape[-1])
-            caption_list = pairs_output_caption_ids.cpu().detach().numpy()
-
-            for re_idx, re_list in enumerate(result_list):
-                decode_text_list = tokenizer.convert_ids_to_tokens(re_list)
-                if "[SEP]" in decode_text_list:
-                    SEP_index = decode_text_list.index("[SEP]")
-                    decode_text_list = decode_text_list[:SEP_index]
-                if "[PAD]" in decode_text_list:
-                    PAD_index = decode_text_list.index("[PAD]")
-                    decode_text_list = decode_text_list[:PAD_index]
-                decode_text = ' '.join(decode_text_list)
-                decode_text = decode_text.replace(" ##", "").strip("##").strip()
-                all_result_lists.append(decode_text)
-
-            for re_idx, re_list in enumerate(caption_list):
-                decode_text_list = tokenizer.convert_ids_to_tokens(re_list)
-                if "[SEP]" in decode_text_list:
-                    SEP_index = decode_text_list.index("[SEP]")
-                    decode_text_list = decode_text_list[:SEP_index]
-                if "[PAD]" in decode_text_list:
-                    PAD_index = decode_text_list.index("[PAD]")
-                    decode_text_list = decode_text_list[:PAD_index]
-                decode_text = ' '.join(decode_text_list)
-                decode_text = decode_text.replace(" ##", "").strip("##").strip()
-                all_caption_lists.append(decode_text)
-
-    # Save full results
-    if test_set is not None and hasattr(test_set, 'iter2video_pairs_dict'):
-        hyp_path = os.path.join(args.output_dir, "hyp_complete_results.txt")
-        with open(hyp_path, "w", encoding='utf-8') as writer:
-            writer.write("{}\t{}\t{}\n".format("video_id", "start_time", "caption"))
-            for idx, pre_txt in enumerate(all_result_lists):
-                video_id, sub_id = test_set.iter2video_pairs_dict[idx]
-                start_time = test_set.data_dict[video_id]['start'][sub_id]
-                writer.write("{}\t{}\t{}\n".format(video_id, start_time, pre_txt))
-        logger.info("File of complete results is saved in {}".format(hyp_path))
-
-    # Save pure results
-    hyp_path = os.path.join(args.output_dir, "hyp.txt")
-    with open(hyp_path, "w", encoding='utf-8') as writer:
-        for pre_txt in all_result_lists:
-            writer.write(pre_txt+"\n")
-
-    ref_path = os.path.join(args.output_dir, "ref.txt")
-    with open(ref_path, "w", encoding='utf-8') as writer:
-        for ground_txt in all_caption_lists:
-            writer.write(ground_txt + "\n")
-
-    if args.datatype == "msrvtt":
-        all_caption_lists = []
-        sentences_dict = test_dataloader.dataset.sentences_dict
-        video_sentences_dict = test_dataloader.dataset.video_sentences_dict
-        for idx in range(len(sentences_dict)):
-            video_id, _ = sentences_dict[idx]
-            sentences = video_sentences_dict[video_id]
-            all_caption_lists.append(sentences)
-        all_caption_lists = [list(itms) for itms in zip(*all_caption_lists)]
-    else:
-        all_caption_lists = [all_caption_lists]
+    final_acc = total_acc / total_eval
 
     # Evaluate
-    metrics_nlg = nlgEvalObj.compute_metrics(ref_list=all_caption_lists, hyp_list=all_result_lists)
-    logger.info(">>>  BLEU_1: {:.4f}, BLEU_2: {:.4f}, BLEU_3: {:.4f}, BLEU_4: {:.4f}".
-                format(metrics_nlg["Bleu_1"], metrics_nlg["Bleu_2"], metrics_nlg["Bleu_3"], metrics_nlg["Bleu_4"]))
-    logger.info(">>>  METEOR: {:.4f}, ROUGE_L: {:.4f}, CIDEr: {:.4f}".format(metrics_nlg["METEOR"], metrics_nlg["ROUGE_L"], metrics_nlg["CIDEr"]))
+    logger.info(">>>  Accuracy: {:.4f}".format(final_acc))
 
-    Bleu_4 = metrics_nlg["Bleu_4"]
-    return Bleu_4
+    return final_acc
 
 DATALOADER_DICT = {}
 DATALOADER_DICT["charades"] = {"train":dataloader_charades_train, "val":dataloader_charades_test}
@@ -558,11 +464,11 @@ def main():
                 logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch + 1, args.epochs, tr_loss)
                 output_model_file = save_model(epoch, args, model, type_name="")
                 if epoch > 0:
-                    Bleu_4 = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
-                    if best_score <= Bleu_4:
-                        best_score = Bleu_4
+                    accuracy = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
+                    if best_score <= accuracy:
+                        best_score = accuracy
                         best_output_model_file = output_model_file
-                    logger.info("The best model is: {}, the Bleu_4 is: {:.4f}".format(best_output_model_file, best_score))
+                    logger.info("The best model is: {}, the accuracy is: {:.4f}".format(best_output_model_file, best_score))
                 else:
                     logger.warning("Skip the evaluation after {}-th epoch.".format(epoch+1))
 

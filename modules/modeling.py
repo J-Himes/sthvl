@@ -206,7 +206,6 @@ class UniVL(UniVLPreTrainedModel):
 
         sequence_output, visual_output = self.get_sequence_visual_output(input_ids, token_type_ids, attention_mask,
                                                                          video, video_mask, shaped=True)
-
         if self.training:
             loss = 0.
             if self._stage_one:
