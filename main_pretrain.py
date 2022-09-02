@@ -21,7 +21,8 @@ from modules.optimization import BertAdam
 from dataloaders.dataloader_howto100m import Youtube_DataLoader
 from torch.utils.data import DataLoader
 from util import get_logger
-torch.distributed.init_process_group(backend="nccl")
+# torch.distributed.init_process_group(backend="nccl")
+torch.distributed.init_process_group(backend="gloo")
 
 global logger
 

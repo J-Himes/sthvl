@@ -11,14 +11,14 @@ do_eval: False
 task_type: pretrain
 summ_type: sampling
 epochs: 50
-batch_size: 5
+batch_size: 1
 lr: 0.0001
 coef_lr: 0.1
 margin: 0.1
 min_words: 0
 max_words: 48
 max_frames: 64
-batch_size_val: 5
+batch_size_val: 1
 video_dim: 1024
 feature_framerate: 1
 min_time: 5.0
@@ -28,8 +28,8 @@ visual_model: visual-base
 cross_model: cross-base
 decoder_model: decoder-base
 do_lower_case: True
-text_num_hidden_layers: 12
-visual_num_hidden_layers: 6
+text_num_hidden_layers: 3
+visual_num_hidden_layers: 3
 cross_num_hidden_layers: 2
 decoder_num_hidden_layers: 3
 
