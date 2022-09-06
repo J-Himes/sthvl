@@ -6,13 +6,13 @@ features_path: data/Charades_v1_features_rgb_1024
 init_model: weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_charades_localization_univl_baseline
 
-do_train: False
+do_train: True
 do_pretrain: False
-do_eval: True
+do_eval: False
 
 task_type: localization
 summ_type: None
-epochs: 5
+epochs: 1
 batch_size: 2
 lr: 0.00005
 coef_lr: 0.1
