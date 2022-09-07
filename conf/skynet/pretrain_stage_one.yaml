@@ -9,7 +9,6 @@ do_pretrain: True
 do_eval: False
 
 task_type: pretrain
-summ_type: sampling
 epochs: 50
 batch_size: 344
 lr: 0.0001
