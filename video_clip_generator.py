@@ -100,71 +100,85 @@ def _get_video(idx, s, e, words, samp_csv, only_sim=False):
     feature_framerate = 1
 
     feature_file = os.path.join(features_path, samp_csv["feature_file"].values[idx])
-    video_features = np.load(feature_file)
+    try:
+        video_features = np.load(feature_file)
 
-    total_frames = 0
-    for i in range(len(s)):
-        if len(video_features) < 1:
+        total_frames = 0
+        for i in range(len(s)):
+            if len(video_features) < 1:
+                raise ValueError("{} is empty.".format(feature_file))
+            video_slice, start, end = _expand_video_slice(s, e, i, i, feature_framerate, video_features)
+
+            video_clip = video_slice
+
+            id_file = samp_csv["feature_file"].values[idx]
+            new_id = samp_csv["feature_file"].values[idx][:11]
+
+            total_frames += video_clip.shape[0]
+
+            # print(feature_file)
+            # print(id_file)
+            # print(new_id)
+            # print(video_clip.shape)
+            # print(words)
+            # print()
+
+            # organize data to be loaded into csv and pickle file for pretraining
+            samp_videos.append(video_clip)
+            samp_text.append(words)
+
+
+        video = np.zeros((total_frames, 1024), dtype=np.float)
+
+        if len(video) < 1:
             raise ValueError("{} is empty.".format(feature_file))
-        video_slice, start, end = _expand_video_slice(s, e, i, i, feature_framerate, video_features)
 
-        video_clip = video_slice
+        video[:samp_videos[0].shape[0]] = samp_videos[0]
 
-        id_file = samp_csv["feature_file"].values[idx]
-        new_id = samp_csv["feature_file"].values[idx][:11]
-
-        total_frames += video_clip.shape[0]
-
-        print(feature_file)
-        print(id_file)
-        print(new_id)
-        print(video_clip.shape)
-        print(words)
-        print()
-
-        # organize data to be loaded into csv and pickle file for pretraining
-        samp_videos.append(video_clip)
-        samp_text.append(words)
-
-
-    video = np.zeros((total_frames, 1024), dtype=np.float)
-    video[:samp_videos[0].shape[0]] = samp_videos[0]
-
-    idx_frame_start = 0
-    idx_frame_end = samp_videos[0].shape[0]
-    samp_s.append(idx_frame_start)
-    samp_e.append(idx_frame_end)
-
-    for i in range(1, len(samp_videos)):
-        idx_frame_start = idx_frame_end
-        idx_frame_end += samp_videos[i].shape[0]
+        idx_frame_start = 0
+        idx_frame_end = samp_videos[0].shape[0]
         samp_s.append(idx_frame_start)
         samp_e.append(idx_frame_end)
 
-        video[idx_frame_start:idx_frame_end] = samp_videos[i]
+        for i in range(1, len(samp_videos)):
+            idx_frame_start = idx_frame_end
+            idx_frame_end += samp_videos[i].shape[0]
+            samp_s.append(idx_frame_start)
+            samp_e.append(idx_frame_end)
 
-    return video, id_file, new_id, samp_s, samp_e, samp_text
+            video[idx_frame_start:idx_frame_end] = samp_videos[i]
+
+        return video, id_file, new_id, samp_s, samp_e, samp_text
+
+    except Exception as e:
+        print("video_id: {} error.".format(feature_file))
+
 
 def _make_videos(samp_csv, samp_dict, id2idx_dict, pairslist_dict):
     video_dict, word_list, start_list, end_list, new_id_file_list, new_id_list = {}, [], [], [], [], []
     csv_files = []
 
     for feature_idx in pairslist_dict:  # sample from each video, has a higher priority than use_mil.
-        idx = id2idx_dict[feature_idx]
-        video_id = samp_csv['video_id'].values[idx]
-        sub_list = pairslist_dict[video_id]
-        ranint = np.random.randint(0, len(sub_list))
-        sub_ids = sub_list[ranint]
-        words, starts, ends = _get_text(video_id, samp_dict, n_pair, sub_ids,)
-        video, id_file, new_id, start, end, text = _get_video(idx, starts, ends, words, samp_csv=samp_csv)
+        try:
+
+            idx = id2idx_dict[feature_idx]
+            video_id = samp_csv['video_id'].values[idx]
+            sub_list = pairslist_dict[video_id]
+            ranint = np.random.randint(0, len(sub_list))
+            sub_ids = sub_list[ranint]
+            words, starts, ends = _get_text(video_id, samp_dict, n_pair, sub_ids,)
+            video, id_file, new_id, start, end, text = _get_video(idx, starts, ends, words, samp_csv=samp_csv)
 
 
-        video_dict[new_id] = {'start': np.array(start), 'end': np.array(end), 'text': np.array(text)}
-        csv_files.append([new_id, id_file])
+            video_dict[new_id] = {'start': np.array(start), 'end': np.array(end), 'text': np.array(text)}
+            csv_files.append([new_id, id_file])
 
-        # save numpy files to appropriate dir
-        with open('./data/data/HowTo100M/processed_videos/sample_clips/video/' + id_file, 'wb') as f:
-            np.save(f, video)
+            # save numpy files to appropriate dir
+            with open('./data/data/HowTo100M/processed_videos/sample_clips/video/' + id_file, 'wb') as f:
+                np.save(f, video)
+
+        except Exception as e:
+            print("video_id: {} error.".format(video_id))
 
     with open('./data/data/HowTo100M/processed_videos/sample_clips/HowTo100M_clips.csv', 'w', newline='') as f:
         csvwriter = csv.writer(f)
@@ -178,80 +192,84 @@ def _get_keyframe_video(idx, s, e, words, samp_csv, summ_type, only_sim=False):
     features_path = './data/data/HowTo100M/processed_videos/sample_clips/video'
 
     feature_file = os.path.join(features_path, samp_csv["feature_file"].values[idx])
-    # try:
-    video_features = np.load(feature_file)
+    try:
+        video_features = np.load(feature_file)
 
-    total_frames = 0
-    for i in range(len(s)):
-        if len(video_features) < 1:
-            raise ValueError("{} is empty.".format(feature_file))
-        # video_slice, start, end = _expand_video_slice(s, e, i, i, feature_framerate, video_features)
-        video_slice, start, end = video_features[int(s[i]):int(e[i])], int(s[i]), int(e[i])
+        total_frames = 0
+        for i in range(len(s)):
+            if len(video_features) < 1:
+                raise ValueError("{} is empty.".format(feature_file))
+            # video_slice, start, end = _expand_video_slice(s, e, i, i, feature_framerate, video_features)
+            video_slice, start, end = video_features[int(s[i]):int(e[i])], int(s[i]), int(e[i])
 
-        percent = 50
-        indices = list(range(len(video_slice)))
-        if summ_type == 'sampling':
-            frames = len(video_slice)
-            selected_frames = np.arange(frames)
-            if percent != 75:
-                rate = percent / 100
-                selected_frames = selected_frames[
-                    selected_frames * rate == (selected_frames * rate).astype(int)]
-            else:
-                rate = 0.25
-                selected_frames = selected_frames[
-                    selected_frames * rate == (selected_frames * rate).astype(int)]
-                selected_frames = np.delete(indices, selected_frames)
-        elif summ_type == 'vsumm_key':
-            if video_slice.shape[0] == 1:
-                selected_frames = [0]
-            else:
-                selected_frames = vsumm(video_slice, 1, percent)
-        elif summ_type == 'vsumm_skim':
-            if video_slice.shape[0] == 1:
-                selected_frames = [0]
-            else:
-                selected_frames = vsumm_skim(video_slice, 1, percent)
-        if summ_type != None:
-            deleted_frames = [x for x in indices if x not in selected_frames]
-            video_slice = np.delete(video_slice, deleted_frames, axis=0)
+            percent = 50
+            indices = list(range(len(video_slice)))
+            if summ_type == 'sampling':
+                frames = len(video_slice)
+                selected_frames = np.arange(frames)
+                if percent != 75:
+                    rate = percent / 100
+                    selected_frames = selected_frames[
+                        selected_frames * rate == (selected_frames * rate).astype(int)]
+                else:
+                    rate = 0.25
+                    selected_frames = selected_frames[
+                        selected_frames * rate == (selected_frames * rate).astype(int)]
+                    selected_frames = np.delete(indices, selected_frames)
+            elif summ_type == 'vsumm_key':
+                if video_slice.shape[0] == 1:
+                    selected_frames = [0]
+                else:
+                    selected_frames = vsumm(video_slice, 1, percent)
+            elif summ_type == 'vsumm_skim':
+                if video_slice.shape[0] == 1:
+                    selected_frames = [0]
+                else:
+                    selected_frames = vsumm_skim(video_slice, 1, percent)
+            if summ_type != None:
+                deleted_frames = [x for x in indices if x not in selected_frames]
+                video_slice = np.delete(video_slice, deleted_frames, axis=0)
 
-        video_clip = video_slice
+            video_clip = video_slice
 
-        id_file = samp_csv["feature_file"].values[idx]
-        new_id = samp_csv["feature_file"].values[idx][:11]
+            id_file = samp_csv["feature_file"].values[idx]
+            new_id = samp_csv["feature_file"].values[idx][:11]
 
-        total_frames += video_clip.shape[0]
+            total_frames += video_clip.shape[0]
 
-        print(feature_file)
-        print(id_file)
-        print(new_id)
-        print(video_clip.shape)
-        print(words)
-        print()
+            # print(feature_file)
+            # print(id_file)
+            # print(new_id)
+            # print(video_clip.shape)
+            # print(words)
+            # print()
 
-        # organize data to be loaded into csv and pickle file for pretraining
-        samp_videos.append(video_clip)
-        samp_text.append(words)
+            # organize data to be loaded into csv and pickle file for pretraining
+            samp_videos.append(video_clip)
+            samp_text.append(words)
 
 
-    video = np.zeros((total_frames, 1024), dtype=np.float)
-    video[:samp_videos[0].shape[0]] = samp_videos[0]
+        video = np.zeros((total_frames, 1024), dtype=np.float)
+        video[:samp_videos[0].shape[0]] = samp_videos[0]
 
-    idx_frame_start = 0
-    idx_frame_end = samp_videos[0].shape[0]
-    samp_s.append(idx_frame_start)
-    samp_e.append(idx_frame_end)
-
-    for i in range(1, len(samp_videos)):
-        idx_frame_start = idx_frame_end
-        idx_frame_end += samp_videos[i].shape[0]
+        idx_frame_start = 0
+        idx_frame_end = samp_videos[0].shape[0]
         samp_s.append(idx_frame_start)
         samp_e.append(idx_frame_end)
 
-        video[idx_frame_start:idx_frame_end] = samp_videos[i]
+        for i in range(1, len(samp_videos)):
+            idx_frame_start = idx_frame_end
+            idx_frame_end += samp_videos[i].shape[0]
+            samp_s.append(idx_frame_start)
+            samp_e.append(idx_frame_end)
 
-    return video, id_file, new_id, samp_s, samp_e, samp_text
+            video[idx_frame_start:idx_frame_end] = samp_videos[i]
+
+        return video, id_file, new_id, samp_s, samp_e, samp_text
+
+    except Exception as e:
+        print("video_id: {} error.".format(feature_file))
+
 
 def _make_keyframe_videos(samp_csv, samp_dict, id2idx_dict, pairslist_dict):
     video_dict, word_list, start_list, end_list, new_id_file_list, new_id_list = {}, [], [], [], [], []
@@ -260,20 +278,25 @@ def _make_keyframe_videos(samp_csv, samp_dict, id2idx_dict, pairslist_dict):
 
     for summ_tech in summ_types:
         for feature_idx in pairslist_dict:  # sample from each video, has a higher priority than use_mil.
-            idx = id2idx_dict[feature_idx]
-            video_id = samp_csv['video_id'].values[idx]
-            sub_list = pairslist_dict[video_id]
-            ranint = np.random.randint(0, len(sub_list))
-            sub_ids = sub_list[ranint]
-            words, starts, ends = _get_text(video_id, samp_dict, n_pair, sub_ids, )
-            video, id_file, new_id, start, end, text = _get_keyframe_video(idx, starts, ends, words, summ_type=summ_tech, samp_csv=samp_csv)
 
-            video_dict[new_id] = {'start': np.array(start), 'end': np.array(end), 'text': np.array(text)}
-            csv_files.append([new_id, id_file])
+            try:
+                idx = id2idx_dict[feature_idx]
+                video_id = samp_csv['video_id'].values[idx]
+                sub_list = pairslist_dict[video_id]
+                ranint = np.random.randint(0, len(sub_list))
+                sub_ids = sub_list[ranint]
+                words, starts, ends = _get_text(video_id, samp_dict, n_pair, sub_ids, )
+                video, id_file, new_id, start, end, text = _get_keyframe_video(idx, starts, ends, words, summ_type=summ_tech, samp_csv=samp_csv)
 
-            # save numpy files to appropriate dir
-            with open('./data/data/HowTo100M/processed_videos/{}/video/'.format(summ_tech) + id_file, 'wb') as f:
-                np.save(f, video)
+                video_dict[new_id] = {'start': np.array(start), 'end': np.array(end), 'text': np.array(text)}
+                csv_files.append([new_id, id_file])
+
+                # save numpy files to appropriate dir
+                with open('./data/data/HowTo100M/processed_videos/{}/video/'.format(summ_tech) + id_file, 'wb') as f:
+                    np.save(f, video)
+
+            except Exception as e:
+                print("video_id: {} error.".format(video_id))
 
         with open('./data/data/HowTo100M/processed_videos/{}/HowTo100M_clips_{}.csv'.format(summ_tech, summ_tech), 'w', newline='') as f:
             csvwriter = csv.writer(f)
