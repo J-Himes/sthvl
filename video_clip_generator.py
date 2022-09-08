@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from torch.utils.data import Dataset
 from vsumm.vsumm import vsumm
 from vsumm.vsumm_skim import vsumm_skim
 import pandas as pd
@@ -97,7 +96,7 @@ def _expand_video_slice(s, e, si, ei, fps, video_features):
 
 def _get_video(idx, s, e, words, samp_csv, only_sim=False):
     samp_videos, samp_s, samp_e, samp_text, samp_id_file, samp_id, slice_shape = [], [], [], [], [], [], []
-    features_path = './data/howto100m/howto100m_s3d_features'
+    features_path = './data/data/HowTo100M/howto100m_s3d_features'
     feature_framerate = 1
 
     feature_file = os.path.join(features_path, samp_csv["feature_file"].values[idx])
@@ -164,19 +163,19 @@ def _make_videos(samp_csv, samp_dict, id2idx_dict, pairslist_dict):
         csv_files.append([new_id, id_file])
 
         # save numpy files to appropriate dir
-        with open('./data/howto100m/sample_clips/video/' + id_file, 'wb') as f:
+        with open('./data/data/HowTo100M/processed_videos/sample_clips/video/' + id_file, 'wb') as f:
             np.save(f, video)
 
-    with open('./data/howto100m/sample_clips/HowTo100M_clips.csv', 'w', newline='') as f:
+    with open('./data/data/HowTo100M/processed_videos/sample_clips/HowTo100M_clips.csv', 'w', newline='') as f:
         csvwriter = csv.writer(f)
         csvwriter.writerow(['video_id', 'feature_file'])
         csvwriter.writerows(csv_files)
 
-    mpu.io.write('./data/howto100m/sample_clips/caption_clips.pickle', video_dict)
+    mpu.io.write('./data/data/HowTo100M/processed_videos/sample_clips/caption_clips.pickle', video_dict)
 
 def _get_keyframe_video(idx, s, e, words, samp_csv, summ_type, only_sim=False):
     samp_videos, samp_s, samp_e, samp_text, samp_id_file, samp_id, slice_shape = [], [], [], [], [], [], []
-    features_path = './data/howto100m/sample_clips/video'
+    features_path = './data/data/HowTo100M/processed_videos/sample_clips/video'
 
     feature_file = os.path.join(features_path, samp_csv["feature_file"].values[idx])
     # try:
@@ -273,25 +272,25 @@ def _make_keyframe_videos(samp_csv, samp_dict, id2idx_dict, pairslist_dict):
             csv_files.append([new_id, id_file])
 
             # save numpy files to appropriate dir
-            with open('./data/howto100m/{}/video/'.format(summ_tech) + id_file, 'wb') as f:
+            with open('./data/data/HowTo100M/processed_videos/{}/video/'.format(summ_tech) + id_file, 'wb') as f:
                 np.save(f, video)
 
-        with open('./data/howto100m/{}/HowTo100M_clips_{}.csv'.format(summ_tech, summ_tech), 'w', newline='') as f:
+        with open('./data/data/HowTo100M/processed_videos/{}/HowTo100M_clips_{}.csv'.format(summ_tech, summ_tech), 'w', newline='') as f:
             csvwriter = csv.writer(f)
             csvwriter.writerow(['video_id', 'feature_file'])
             csvwriter.writerows(csv_files)
 
-        mpu.io.write('./data/howto100m/{}/caption_clips_{}.pickle'.format(summ_tech, summ_tech), video_dict)
+        mpu.io.write('./data/data/HowTo100M/processed_videos/{}/caption_clips_{}.pickle'.format(summ_tech, summ_tech), video_dict)
 
 
 if __name__ == "__main__":
     n_pair, positive_n_pair = 3, 3
 
     # initialize data structures from csv and pickle files
-    howto100_csv = pd.read_csv('./data/howto100m/debug/HowTo100M_one_thousandth.csv')
+    howto100_csv = pd.read_csv('./data/data/HowTo100M/pretrain_data/HowTo100M_100.csv')
     # Get iterator video ids
     video_id_list = [itm for itm in howto100_csv['video_id'].values]
-    data_dict = pickle.load(open('./data/howto100m/debug/caption_one_thousandth.pickle', 'rb'))
+    data_dict = pickle.load(open('./data/data/HowTo100M/pretrain_data/caption_100.pickle', 'rb'))
 
     video_id2idx_dict, iter2video_pairs_dict, iter2video_pairslist_dict = _make_dicts(samp_dict=data_dict, id_list=video_id_list)
 
@@ -301,10 +300,10 @@ if __name__ == "__main__":
     # keyframe video clip generation below
 
     # initalize data structures from csv and pickle files (ensure filepaths are correct)
-    howto100_csv = pd.read_csv('./data/howto100m/sample_clips/HowTo100M_clips.csv')
+    howto100_csv = pd.read_csv('./data/data/HowTo100M/processed_videos/sample_clips/HowTo100M_clips.csv')
     # Get iterator video ids
     video_id_list = [itm for itm in howto100_csv['video_id'].values]
-    data_dict = pickle.load(open('./data/howto100m/sample_clips/caption_clips.pickle', 'rb'))
+    data_dict = pickle.load(open('./data/data/HowTo100M/processed_videos/sample_clips/caption_clips.pickle', 'rb'))
 
     video_id2idx_dict, iter2video_pairs_dict, iter2video_pairslist_dict = _make_dicts(samp_dict=data_dict, id_list=video_id_list)
     _make_keyframe_videos(samp_csv=howto100_csv, samp_dict=data_dict, id2idx_dict=video_id2idx_dict, pairslist_dict=iter2video_pairslist_dict)
