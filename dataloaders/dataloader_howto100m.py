@@ -301,6 +301,9 @@ class Youtube_DataLoader(Dataset):
                     raise ValueError("{} is empty.".format(feature_file))
                 # video_slice, start, end = self._expand_video_slice(s, e, i, i, self.feature_framerate, video_features)
                 video_slice, start, end = video_features[int(s[i]):int(e[i])], int(s[i]), int(e[i])
+                
+                if self.max_frames < video_slice.shape[0]:
+                    video_slice = video_slice[:self.max_frames]
 
                 slice_shape = video_slice.shape
                 max_video_length[i] = max_video_length[i] if max_video_length[i] > slice_shape[0] else slice_shape[0]
