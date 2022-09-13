@@ -214,7 +214,8 @@ def load_model(epoch, args, n_gpu, device, model_file=None):
         # Prepare model
         cache_dir = args.cache_dir if args.cache_dir else os.path.join(str(PYTORCH_PRETRAINED_BERT_CACHE), 'distributed')
         model = UniVL.from_pretrained(args.bert_model, args.visual_model, args.cross_model, args.decoder_model,
-                                       cache_dir=cache_dir, state_dict=model_state_dict, task_config=args)
+                                       cache_dir=cache_dir, state_dict=model_state_dict, task_config=args,
+                                      max_frames=args.max_frames)
 
         model.to(device)
     else:
@@ -266,7 +267,7 @@ def train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, 
 
             global_step += 1
             if global_step % log_step == 0 and local_rank == 0:
-                logger.info("Epoch: %d/%s, Step: %d/%d, Lr: %s, Loss: %f, Time/step: %f", epoch + 1,
+                logger.info("Epoch: %d/%s, Step: %d/%d, Lr: %s, Loss: %f, Time/step: %f", epoch,
                             args.epochs, step + 1,
                             len(train_dataloader), "-".join([str('%.6f'%itm) for itm in sorted(list(set(optimizer.get_lr())))]),
                             float(loss),
@@ -454,23 +455,23 @@ def main():
         best_score = 0.00001
         best_output_model_file = None
         global_step = 0
-        for epoch in range(args.epochs):
-            train_sampler.set_epoch(epoch)
-
-            tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, optimizer,
-                                               scheduler, global_step, nlgEvalObj=nlgEvalObj, local_rank=args.local_rank)
+        for epoch in range(args.epochs+1):
+            print(epoch)
+            if epoch is not 0:
+                train_sampler.set_epoch(epoch)
+                tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, optimizer,
+                                                   scheduler, global_step, nlgEvalObj=nlgEvalObj, local_rank=args.local_rank)
+            else:
+                tr_loss = 0
 
             if args.local_rank == 0:
-                logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch + 1, args.epochs, tr_loss)
+                logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch, args.epochs, tr_loss)
                 output_model_file = save_model(epoch, args, model, type_name="")
-                if epoch > 0:
-                    accuracy = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
-                    if best_score <= accuracy:
-                        best_score = accuracy
-                        best_output_model_file = output_model_file
-                    logger.info("The best model is: {}, the accuracy is: {:.4f}".format(best_output_model_file, best_score))
-                else:
-                    logger.warning("Skip the evaluation after {}-th epoch.".format(epoch+1))
+                accuracy = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
+                if best_score <= accuracy:
+                    best_score = accuracy
+                    best_output_model_file = output_model_file
+                logger.info("The best model is: {}, the accuracy is: {:.4f}".format(best_output_model_file, best_score))
 
         if args.local_rank == 0:
             model = load_model(-1, args, n_gpu, device, model_file=best_output_model_file)
