@@ -284,6 +284,11 @@ class Charades_Localization_DataLoader(Dataset):
 
         video, video_mask, masked_video, video_labels_index = self._get_video(choice_video_ids)
         label = label[1][:, :video.shape[1]]
+        if label.shape[1] < video.shape[1]:
+            diff = video.shape[1] - label.shape[1]
+            zeros = np.zeros((label.shape[0], diff))
+            label = np.append(label, zeros, axis=1)
+            
 
         return pairs_text, pairs_mask, pairs_segment, video, video_mask, \
                pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \

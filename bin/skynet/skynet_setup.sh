@@ -7,7 +7,7 @@ conda activate sthvl
 
 yes | pip install hydra-core --upgrade
 yes | pip install git+https://github.com/Maluuba/nlg-eval.git@master
-conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch --yes
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch --yes
 
 rm data
 rm ckpts

@@ -1,16 +1,29 @@
 from tqdm import tqdm
 import numpy as np
 from glob import glob
+import pandas as pd
 import torch
 import os
 
 def main():
-    feature_dirs = glob('data/charades_pkl/Charades_v1_features_rgb/*', recursive=True)
-    new_features_dir = 'data/charades_pkl/Charades_v1_features_rgb_1024_3/'
-    if not os.path.exists(new_features_dir):
-        os.makedirs(new_features_dir)
+    feature_dirs = glob('data/charades_pkl/Charades_v1_features_rgb_1024/*', recursive=True)
 
+    csv_path='data/charades_pkl/Charades_v1_train.csv'
+    csv = pd.read_csv(csv_path)
+    print(csv.descriptions.map(len).max())
+
+    return
+    most_frames = 0
     for dir in tqdm(feature_dirs):
+        path_cmd = dir + '/*'
+        video_paths = glob(path_cmd, recursive=True)
+        for path in video_paths:
+            video = np.load(path)
+            frames = video.shape[0]
+            if frames > most_frames:
+                most_frames = frames
+    print(most_frames)
+'''
         if dir[-3:] == 'csv':
             continue
         new_feature_dir = new_features_dir + dir[-5:]
@@ -38,7 +51,7 @@ def main():
 
         with open(save_path, 'wb') as f:
             np.save(f, features)
-
+'''
 	
 if __name__ == "__main__":
     main()
