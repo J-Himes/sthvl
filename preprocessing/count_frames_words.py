@@ -6,11 +6,21 @@ import torch
 import os
 
 def main():
-    feature_dirs = glob('data/charades_pkl/Charades_v1_features_rgb_1024/*', recursive=True)
-
-    csv_path='data/charades_pkl/Charades_v1_train.csv'
+    csv_path='../data/Charades_v1_features_rgb/Charades_v1_train.csv'
     csv = pd.read_csv(csv_path)
-    print(csv.descriptions.map(len).max())
+    word_counts = []
+    for description in csv.descriptions:
+        word_counts.append(len(description))
+    print('Max words: ', csv.descriptions.map(len).max())
+    print('Average words: ', np.mean(word_counts))
+    print('Std words: ', np.std(word_counts))
+
+    video_counts = []
+    for length in csv.length:
+        video_counts.append(length * 6)
+    print('Max video: ', max(csv.length))
+    print('Average video: ', np.mean(video_counts))
+    print('Std video: ', np.std(video_counts))
 
     return
     most_frames = 0

@@ -456,7 +456,9 @@ def main():
         best_output_model_file = None
         global_step = 0
         for epoch in range(args.epochs+1):
-            print(epoch)
+            if args.zeroshot is False and epoch is 0:
+                continue
+
             if epoch is not 0:
                 train_sampler.set_epoch(epoch)
                 tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, optimizer,

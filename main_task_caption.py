@@ -601,23 +601,24 @@ def main():
         best_score = 0.00001
         best_output_model_file = None
         global_step = 0
-        for epoch in range(args.epochs):
-            train_sampler.set_epoch(epoch)
+        for epoch in range(args.epochs+1):
+            if epoch > 0:
+                train_sampler.set_epoch(epoch)
 
-            tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, optimizer,
-                                               scheduler, global_step, nlgEvalObj=nlgEvalObj, local_rank=args.local_rank)
+                tr_loss, global_step = train_epoch(epoch, args, model, train_dataloader, tokenizer, device, n_gpu, optimizer,
+                                                   scheduler, global_step, nlgEvalObj=nlgEvalObj, local_rank=args.local_rank)
+            else:
+                tr_loss = 0
 
             if args.local_rank == 0:
-                logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch + 1, args.epochs, tr_loss)
+                logger.info("Epoch %d/%s Finished, Train Loss: %f", epoch, args.epochs, tr_loss)
                 output_model_file = save_model(epoch, args, model, type_name="")
-                if epoch > 0:
-                    Bleu_4 = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
-                    if best_score <= Bleu_4:
-                        best_score = Bleu_4
-                        best_output_model_file = output_model_file
-                    logger.info("The best model is: {}, the Bleu_4 is: {:.4f}".format(best_output_model_file, best_score))
-                else:
-                    logger.warning("Skip the evaluation after {}-th epoch.".format(epoch+1))
+                Bleu_4 = eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalObj=nlgEvalObj)
+                if best_score <= Bleu_4:
+                    best_score = Bleu_4
+                    best_output_model_file = output_model_file
+                logger.info("The best model is: {}, the Bleu_4 is: {:.4f}".format(best_output_model_file, best_score))
+
 
         if args.local_rank == 0:
             model = load_model(-1, args, n_gpu, device, model_file=best_output_model_file)

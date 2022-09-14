@@ -13,6 +13,7 @@ do_eval: False
 task_type: localization
 summ_type: None
 epochs: 2
+zeroshot: False
 batch_size: 4
 lr: 0.00005
 coef_lr: 0.1
