@@ -109,7 +109,7 @@ def check_attr(target_name, task_config):
     return hasattr(task_config, target_name)
 
 class UniVL(UniVLPreTrainedModel):
-    def __init__(self, bert_config, visual_config, cross_config, decoder_config, task_config, max_frames):
+    def __init__(self, bert_config, visual_config, cross_config, decoder_config, task_config):
         super(UniVL, self).__init__(bert_config, visual_config, cross_config, decoder_config)
         self.task_config = task_config
         self.ignore_video_index = -1
@@ -147,7 +147,7 @@ class UniVL(UniVLPreTrainedModel):
         visual_word_embeddings_weight = self.visual.embeddings.word_embeddings.weight
         # <=== End of Video Encoder
 
-        self.linear = LinearModel(visual_config, max_frames)
+        self.linear = LinearModel(visual_config, self.task_config.max_frames, self.task_config.max_words)
         self.linear_loss_fct = CrossEntropyLoss()
 
         if self._stage_one is False or self.train_sim_after_cross:
