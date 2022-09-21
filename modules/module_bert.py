@@ -370,7 +370,7 @@ class BertModel(PreTrainedModel):
     Inputs:
         `type`: a str, indicates which masking will be used in the attention, choice from [`bi`, `seq`, `gen`]
         `input_ids`: a torch.LongTensor of shape [batch_size, sequence_length]
-            with the word token indices in the vocabulary(see the tokens preprocessing logic in the scripts
+            with the word token indices in the vocabulary(see the tokens util logic in the scripts
             `extract_features.py`, `run_classifier.py` and `run_squad.py`)
         `token_type_ids`: an optional torch.LongTensor of shape [batch_size, sequence_length] with the token
             types indices selected in [0, 1]. Type 0 corresponds to a `sentence A` and type 1 corresponds to

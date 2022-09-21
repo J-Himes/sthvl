@@ -94,7 +94,7 @@ def init_model(args, device, n_gpu, local_rank):
     # Prepare model
     cache_dir = args.cache_dir if args.cache_dir else os.path.join(str(PYTORCH_PRETRAINED_BERT_CACHE), 'distributed')
     model = UniVL.from_pretrained(args.bert_model, args.visual_model, args.cross_model, args.decoder_model,
-                                   cache_dir=cache_dir, state_dict=model_state_dict, task_config=args, max_frames=args.max_frames)
+                                   cache_dir=cache_dir, state_dict=model_state_dict, task_config=args)
 
     model.to(device)
 
@@ -602,6 +602,9 @@ def main():
         best_output_model_file = None
         global_step = 0
         for epoch in range(args.epochs+1):
+            if args.zeroshot is False and epoch is 0:
+                continue
+
             if epoch > 0:
                 train_sampler.set_epoch(epoch)
 
