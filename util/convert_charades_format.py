@@ -45,9 +45,9 @@ def main():
     csv_paths = {'train': 'data/Charades_v1_features_rgb/Charades_v1_train.csv',
                 'test': 'data/Charades_v1_features_rgb/Charades_v1_test.csv'}
     json_path = 'data/charades/charades.json'
-    features_path = '../util/data/Charades_v1_features_rgb_1024'
-    max_words = 1000
-    max_frames = 1000
+    features_path = 'data/Charades_v1_features_rgb_1024'
+    max_words = 32
+    max_frames = 32
     output_dir = 'data/Charades_v1_features_rgb_1024_trim' + '_' + str(max_frames) + '_' + str(max_words)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
