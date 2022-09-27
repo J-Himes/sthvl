@@ -223,7 +223,6 @@ class Charades_Localization_DataLoader(Dataset):
             diff = video.shape[1] - label.shape[1]
             zeros = np.zeros((label.shape[0], diff))
             label = np.append(label, zeros, axis=1)
-            
 
         return pairs_text, pairs_mask, pairs_segment, video, video_mask, \
                pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \
