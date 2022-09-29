@@ -11,16 +11,14 @@ import os
 from collections import OrderedDict
 from nlgeval import NLGEval
 import time
-import argparse
 import sys
 import hydra
 from modules.tokenization import BertTokenizer
 from modules.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 from modules.modeling import UniVL
 from modules.optimization import BertAdam
-from modules.beam import Beam
 from torch.utils.data import DataLoader
-from dataloaders.dataloader_youcook_caption import Youcook_Caption_DataLoader
+from torchmetrics import AveragePrecision
 from dataloaders.dataloader_charades_localization import Charades_Localization_DataLoader
 from util import get_logger
 torch.distributed.init_process_group(backend="nccl")
@@ -395,11 +393,14 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
                 total_acc += acc
                 total_eval += 1
 
-    final_acc = total_acc / total_eval
+                AP = AveragePrecision()
+                ap = AP(label[i], output)
+                aps.append(ap.cpu().item())
 
     # Evaluate
-    logger.info(">>>  Accuracy: {:.4f}".format(final_acc))
-
+    mAP = np.mean(aps)
+    logger.info(">>>  mAP: {:.4f}".format(mAP))
+    final_acc = total_acc / total_eval
     return final_acc
 
 DATALOADER_DICT = {}
