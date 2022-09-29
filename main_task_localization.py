@@ -468,7 +468,7 @@ def main():
                 if best_score <= accuracy:
                     best_score = accuracy
                     best_output_model_file = output_model_file
-                logger.info("The best model is: {}, the accuracy is: {:.4f}".format(best_output_model_file, best_score))
+                logger.info("The best model is: {}, the mAP is: {:.4f}".format(best_output_model_file, best_score))
 
         if args.local_rank == 0:
             model = load_model(-1, args, n_gpu, device, model_file=best_output_model_file)
