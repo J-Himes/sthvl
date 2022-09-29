@@ -25,7 +25,7 @@ import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss
 
 from modules.until_module import PreTrainedModel, LayerNorm, CrossEn, MILNCELoss, MaxMarginRankingLoss
 from modules.module_bert import BertModel, BertConfig, BertOnlyMLMHead
@@ -147,7 +147,6 @@ class UniVL(UniVLPreTrainedModel):
         visual_word_embeddings_weight = self.visual.embeddings.word_embeddings.weight
         # <=== End of Video Encoder
 
-        self.linear_loss = MSELoss()
         self.linear = LinearModel(visual_config, self.task_config.max_frames, self.task_config.max_words)
 
         if self._stage_one is False or self.train_sim_after_cross:
@@ -275,7 +274,7 @@ class UniVL(UniVLPreTrainedModel):
                     for i in range(len(sequence_output)):
                         fused_embeddings = torch.cat((sequence_output[i], visual_output[i]), 0)
                         outputs[i] = self.linear(fused_embeddings.view(-1))
-                    loss += self.linear_loss(outputs, label)
+                    loss += self._calculate_mse_loss(outputs, label)
 
             return loss
         else:

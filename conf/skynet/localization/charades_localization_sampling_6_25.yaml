@@ -1,16 +1,16 @@
 datatype: charades
 train_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/train.pkl
 val_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/test.pkl
-init_model: weights/weight/univl.pretrained.bin
-output_dir: ckpts/localization/ckpt_charades_localization_univl_baseline_sampling
+init_model: models/sampling_6_25/L48_V6_D3_Phase2/pytorch_model.bin.pretrain.49
+output_dir: ckpts/localization/ckpt_charades_localization_univl_sampling_6_25
 
 do_train: True
 do_pretrain: False
 do_eval: False
 
 task_type: localization
-summ_type: sampling
-zeroshot: False
+summ_type: None
+zeroshot: True
 epochs: 3
 batch_size: 16
 lr: 0.001
