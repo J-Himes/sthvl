@@ -1,6 +1,6 @@
 datatype: charades
-train_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/train.pkl
-val_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/test.pkl
+train_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/train_trimmed.pkl
+val_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/test_trimmed.pkl
 init_model: models/pre_trained_vsumm_skim_6_25/L48_V6_D3_Phase2/pytorch_model.bin.pretrain.49
 output_dir: ckpts/localization/ckpt_charades_localization_univl_skim_6_25
 

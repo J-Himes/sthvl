@@ -402,7 +402,8 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
     mAP = np.mean(aps)
     logger.info(">>>  mAP: {:.4f}".format(mAP))
     final_acc = total_acc / total_eval
-    return final_acc
+    logger.info(">>>  Accuracy: {:.4f}".format(final_acc))
+    return mAP
 
 DATALOADER_DICT = {}
 DATALOADER_DICT["charades"] = {"train":dataloader_charades_train, "val":dataloader_charades_test}

@@ -1,6 +1,6 @@
 datatype: charades
-train_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/train.pkl
-val_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/test.pkl
+train_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/train_trimmed.pkl
+val_pkl: data/charades_pkl/Charades_v1_features_rgb_1024_trim_32_32/test_trimmed.pkl
 init_model: weights/weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_charades_localization_univl_baseline
 
