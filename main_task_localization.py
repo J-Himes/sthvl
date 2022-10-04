@@ -374,6 +374,7 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
 
     model.eval()
     total_acc, total_eval = 0, 0
+    aps = []
     for batch in test_dataloader:
         batch = tuple(t.to(device, non_blocking=True) for t in batch)
 
@@ -381,7 +382,6 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
         pairs_masked_text, pairs_token_labels, masked_video, video_labels_index, \
         pairs_input_caption_ids, pairs_decoder_mask, pairs_output_caption_ids, label = batch
 
-        aps = []
         with torch.no_grad():
             sequence_output, visual_output = model.get_sequence_visual_output(input_ids, segment_ids, input_mask, video, video_mask)
             for i in range(len(sequence_output)):
