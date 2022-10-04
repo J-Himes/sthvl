@@ -20,6 +20,7 @@ from modules.optimization import BertAdam
 from torch.utils.data import DataLoader
 from torchmetrics import AveragePrecision
 from dataloaders.dataloader_charades_localization import Charades_Localization_DataLoader
+from math import isnan
 from util import get_logger
 torch.distributed.init_process_group(backend="nccl")
 
@@ -137,7 +138,8 @@ def dataloader_charades_train(args, tokenizer):
         max_words=args.max_words,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=args.summ_type
+        summ_type=args.summ_type,
+        debug=args.do_debug
     )
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(charades_dataset)
@@ -159,7 +161,8 @@ def dataloader_charades_test(args, tokenizer):
         max_words=args.max_words,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=args.summ_type
+        summ_type=args.summ_type,
+        debug=args.do_debug
     )
 
     test_sampler = SequentialSampler(charades_testset)
@@ -375,6 +378,7 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
     model.eval()
     total_acc, total_eval = 0, 0
     aps = []
+    AP = AveragePrecision()
     for batch in test_dataloader:
         batch = tuple(t.to(device, non_blocking=True) for t in batch)
 
@@ -394,9 +398,9 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
                 total_acc += acc
                 total_eval += 1
 
-                AP = AveragePrecision()
-                ap = AP(label[i].float(), output.float())
-                aps.append(ap.cpu().item())
+                ap = AP(output, label[i])
+                if not isnan(ap):
+                    aps.append(ap.cpu().item())
 
     # Evaluate
     mAP = np.mean(aps)

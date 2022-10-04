@@ -21,10 +21,13 @@ class Charades_Localization_DataLoader(Dataset):
             tokenizer,
             max_words=30,
             max_frames=100,
-            summ_type=None
+            summ_type=None,
+            debug=False
     ):
         with open(pkl_path, 'rb') as f:
             self.data = pickle.load(f)
+        if debug == True:
+            self.data = self.data[:500]
         self.max_words = max_words
         self.max_frames = max_frames
         self.tokenizer = tokenizer
