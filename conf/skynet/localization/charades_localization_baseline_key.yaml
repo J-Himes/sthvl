@@ -12,7 +12,7 @@ do_debug: False
 task_type: localization
 summ_type: vsumm_key
 zeroshot: False
-epochs: 3
+epochs: 20
 batch_size: 16
 lr: 0.001
 coef_lr: 0.1
