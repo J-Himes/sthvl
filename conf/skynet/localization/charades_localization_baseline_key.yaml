@@ -7,6 +7,7 @@ output_dir: ckpts/localization/ckpt_charades_localization_univl_baseline_key
 do_train: True
 do_pretrain: False
 do_eval: False
+do_debug: False
 
 task_type: localization
 summ_type: vsumm_key
