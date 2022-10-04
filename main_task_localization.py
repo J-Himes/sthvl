@@ -161,7 +161,7 @@ def dataloader_charades_test(args, tokenizer):
         max_words=args.max_words,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=args.summ_type,
+        summ_type='None',
         debug=args.do_debug
     )
 

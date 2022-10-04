@@ -281,9 +281,6 @@ class UniVL(UniVLPreTrainedModel):
         else:
             return None
 
-    def _calculate_mse_loss(self, output, label):
-        return torch.sum((output - label) ** 2)
-
     def _calculate_mlm_loss(self, sequence_output_alm, pairs_token_labels):
         alm_scores = self.cls(sequence_output_alm)
         alm_loss = self.alm_loss_fct(alm_scores.view(-1, self.bert_config.vocab_size), pairs_token_labels.view(-1))
