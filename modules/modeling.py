@@ -147,6 +147,7 @@ class UniVL(UniVLPreTrainedModel):
         visual_word_embeddings_weight = self.visual.embeddings.word_embeddings.weight
         # <=== End of Video Encoder
 
+        self.bce_loss = BCELoss()
         self.linear = LinearModel(visual_config, self.task_config.max_frames, self.task_config.max_words)
 
         if self._stage_one is False or self.train_sim_after_cross:
@@ -274,8 +275,7 @@ class UniVL(UniVLPreTrainedModel):
                     for i in range(len(sequence_output)):
                         fused_embeddings = torch.cat((sequence_output[i], visual_output[i]), 0)
                         outputs[i] = self.linear(fused_embeddings.view(-1))
-                    loss_fcn = BCELoss()
-                    loss += loss_fcn(outputs.float(), label.float())
+                    loss += self.bce_loss(outputs.float(), label.float())
 
             return loss
         else:
