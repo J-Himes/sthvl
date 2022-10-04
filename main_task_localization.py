@@ -377,7 +377,7 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
 
     model.eval()
     total_acc, total_eval = 0, 0
-    aps = []
+    total_ap, ap_count = 0, 0
     AP = AveragePrecision()
     for batch in test_dataloader:
         batch = tuple(t.to(device, non_blocking=True) for t in batch)
@@ -391,7 +391,6 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
             for i in range(len(sequence_output)):
                 fused_embeddings = torch.cat((sequence_output[i], visual_output[i]), 0)
                 output = model.linear(fused_embeddings.view(-1))
-                output = torch.round(output)
                 total_frames = output.shape[0] * output.shape[1]
                 diff = torch.sum(torch.abs(torch.sub(output, label[i])))
                 acc = (total_frames - diff) / total_frames
@@ -400,10 +399,11 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
 
                 ap = AP(output, label[i])
                 if not isnan(ap):
-                    aps.append(ap.cpu().item())
+                    ap_count += 1
+                    total_ap += ap
 
     # Evaluate
-    mAP = np.mean(aps)
+    mAP = total_ap / ap_count
     final_acc = total_acc / total_eval
     logger.info(">>>  mAP: {:.4f}, Accuracy: {:.4f}".format(mAP, final_acc))
     return mAP
