@@ -395,14 +395,13 @@ def eval_epoch(args, model, test_dataloader, tokenizer, device, n_gpu, nlgEvalOb
                 total_eval += 1
 
                 AP = AveragePrecision()
-                ap = AP(label[i], output)
+                ap = AP(label[i].float(), output.float())
                 aps.append(ap.cpu().item())
 
     # Evaluate
     mAP = np.mean(aps)
-    logger.info(">>>  mAP: {:.4f}".format(mAP))
     final_acc = total_acc / total_eval
-    logger.info(">>>  Accuracy: {:.4f}".format(final_acc))
+    logger.info(">>>  mAP: {:.4f}, Accuracy: {:.4f}".format(mAP, final_acc))
     return mAP
 
 DATALOADER_DICT = {}

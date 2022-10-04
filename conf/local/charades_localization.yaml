@@ -4,9 +4,9 @@ val_pkl: data/Charades_v1_features_rgb_1024_trim_32_32/test_trimmed.pkl
 init_model: weight/univl.pretrained.bin
 output_dir: ckpts/ckpt_charades_localization_univl_baseline
 
-do_train: False
+do_train: Ture
 do_pretrain: False
-do_eval: True
+do_eval: False
 
 task_type: localization
 summ_type: None

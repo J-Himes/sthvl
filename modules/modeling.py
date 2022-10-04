@@ -25,7 +25,7 @@ import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss, BCELoss
 
 from modules.until_module import PreTrainedModel, LayerNorm, CrossEn, MILNCELoss, MaxMarginRankingLoss
 from modules.module_bert import BertModel, BertConfig, BertOnlyMLMHead
@@ -274,7 +274,8 @@ class UniVL(UniVLPreTrainedModel):
                     for i in range(len(sequence_output)):
                         fused_embeddings = torch.cat((sequence_output[i], visual_output[i]), 0)
                         outputs[i] = self.linear(fused_embeddings.view(-1))
-                    loss += self._calculate_mse_loss(outputs, label)
+                    loss_fcn = BCELoss()
+                    loss += loss_fcn(outputs.float(), label.float())
 
             return loss
         else:
