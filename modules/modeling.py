@@ -25,7 +25,7 @@ import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn import CrossEntropyLoss, BCELoss
+from torch.nn import CrossEntropyLoss, BCELoss, MSELoss
 
 from modules.until_module import PreTrainedModel, LayerNorm, CrossEn, MILNCELoss, MaxMarginRankingLoss
 from modules.module_bert import BertModel, BertConfig, BertOnlyMLMHead
