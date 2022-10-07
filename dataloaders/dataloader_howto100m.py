@@ -346,7 +346,6 @@ class Youtube_DataLoader(Dataset):
                 #     pass
                 # else:
                 #     video[i][:slice_shape[0]] = video_slice
->>>>>>> 84b336b (input zero tensor arrays for visual data for ablation study)
         #
         # except Exception as e:
         #     print("video_id: {} error.".format(feature_file))
