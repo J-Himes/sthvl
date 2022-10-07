@@ -1,6 +1,6 @@
-train_csv: data/howto100m/vsumm_skim/HowTo100M_clips_vsumm_skim.csv
-data_path: data/howto100m/vsumm_skim/caption_clips_vsumm_skim.pickle
-features_path: data/howto100m/vsumm_skim/video
+train_csv: data/howto100m/sample_clips/HowTo100M_clips.csv
+data_path: data/howto100m/sample_clips/caption_clips.pickle
+features_path: data/howto100m/sample_clips/video
 init_model: False
 output_dir: models/pre_trained/L48_V6_D3_Phase1
 

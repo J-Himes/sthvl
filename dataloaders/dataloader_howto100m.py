@@ -292,28 +292,28 @@ class Youtube_DataLoader(Dataset):
         max_video_length = [0] * len(s)
 
         video = np.zeros((len(s), self.max_frames, self.feature_size), dtype=np.float)
-        feature_file = os.path.join(self.features_path, self.csv["feature_file"].values[idx])
-        try:
-            video_features = np.load(feature_file)
-
-            for i in range(len(s)):
-                if len(video_features) < 1:
-                    raise ValueError("{} is empty.".format(feature_file))
-                # video_slice, start, end = self._expand_video_slice(s, e, i, i, self.feature_framerate, video_features)
-                video_slice, start, end = video_features[int(s[i]):int(e[i])], int(s[i]), int(e[i])
-                
-                if self.max_frames < video_slice.shape[0]:
-                    video_slice = video_slice[:self.max_frames]
-
-                slice_shape = video_slice.shape
-                max_video_length[i] = max_video_length[i] if max_video_length[i] > slice_shape[0] else slice_shape[0]
-                if len(video_slice) < 1:
-                    pass
-                else:
-                    video[i][:slice_shape[0]] = video_slice
-
-        except Exception as e:
-            print("video_id: {} error.".format(feature_file))
+        # feature_file = os.path.join(self.features_path, self.csv["feature_file"].values[idx])
+        # try:
+        #     video_features = np.load(feature_file)
+        #
+        #     for i in range(len(s)):
+        #         if len(video_features) < 1:
+        #             raise ValueError("{} is empty.".format(feature_file))
+        #         # video_slice, start, end = self._expand_video_slice(s, e, i, i, self.feature_framerate, video_features)
+        #         video_slice, start, end = video_features[int(s[i]):int(e[i])], int(s[i]), int(e[i])
+        #
+        #         if self.max_frames < video_slice.shape[0]:
+        #             video_slice = video_slice[:self.max_frames]
+        #
+        #         slice_shape = video_slice.shape
+        #         max_video_length[i] = max_video_length[i] if max_video_length[i] > slice_shape[0] else slice_shape[0]
+        #         if len(video_slice) < 1:
+        #             pass
+        #         else:
+        #             video[i][:slice_shape[0]] = video_slice
+        #
+        # except Exception as e:
+        #     print("video_id: {} error.".format(feature_file))
 
         for i, v_length in enumerate(max_video_length):
             video_mask[i][:v_length] = [1] * v_length
