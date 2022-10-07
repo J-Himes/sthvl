@@ -299,6 +299,7 @@ class Youtube_DataLoader(Dataset):
         #     for i in range(len(s)):
         #         if len(video_features) < 1:
         #             raise ValueError("{} is empty.".format(feature_file))
+
         #         # video_slice, start, end = self._expand_video_slice(s, e, i, i, self.feature_framerate, video_features)
         #         video_slice, start, end = video_features[int(s[i]):int(e[i])], int(s[i]), int(e[i])
         #
@@ -311,6 +312,41 @@ class Youtube_DataLoader(Dataset):
         #             pass
         #         else:
         #             video[i][:slice_shape[0]] = video_slice
+
+        #         video_slice, start, end = self._expand_video_slice(s, e, i, i, self.feature_framerate, video_features)
+        #
+        #
+        #         percent = 50
+        #         indices = list(range(len(video_slice)))
+        #         if self.summ_type == 'sampling':
+        #             frames = len(video_slice)
+        #             selected_frames = np.arange(frames)
+        #             if percent != 75:
+        #                 rate = percent / 100
+        #                 selected_frames = selected_frames[
+        #                     selected_frames * rate == (selected_frames * rate).astype(int)]
+        #             else:
+        #                 rate = 0.25
+        #                 selected_frames = selected_frames[
+        #                     selected_frames * rate == (selected_frames * rate).astype(int)]
+        #                 selected_frames = np.delete(indices, selected_frames)
+        #         elif self.summ_type == 'vsumm_key':
+        #             selected_frames = vsumm(video_slice, 1, percent)
+        #         elif self.summ_type == 'vsumm_skim':
+        #             selected_frames = vsumm_skim(video_slice, 1, percent)
+        #         if self.summ_type != None:
+        #             deleted_frames = [x for x in indices if x not in selected_frames]
+        #             video_slice = np.delete(video_slice, deleted_frames, axis=0)
+
+
+                #
+                # slice_shape = video_slice.shape
+                # max_video_length[i] = max_video_length[i] if max_video_length[i] > slice_shape[0] else slice_shape[0]
+                # if len(video_slice) < 1:
+                #     pass
+                # else:
+                #     video[i][:slice_shape[0]] = video_slice
+>>>>>>> 84b336b (input zero tensor arrays for visual data for ablation study)
         #
         # except Exception as e:
         #     print("video_id: {} error.".format(feature_file))
