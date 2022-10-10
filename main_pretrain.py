@@ -229,7 +229,6 @@ def dataloader_pretrain(args, tokenizer, only_sim=False):
         sampled_use_mil=args.sampled_use_mil,
         pretrain_enhance_vmodal=args.pretrain_enhance_vmodal,
         video_dim=args.video_dim,
-        summ_type=args.summ_type
     )
 
     sampler = torch.utils.data.distributed.DistributedSampler(dataset)

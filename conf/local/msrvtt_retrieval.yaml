@@ -10,8 +10,8 @@ do_train: True
 do_pretrain: False
 do_eval: False
 
+summ_type: None
 task_type: retrieval
-summ_type: sampling
 epochs: 5
 batch_size: 2
 lr: 0.00005

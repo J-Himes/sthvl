@@ -4,13 +4,14 @@ val_csv: data/youcookii/youcookii_val.csv
 data_path: data/youcookii/youcookii_data.no_transcript.pickle
 features_path: data/youcookii/youcookii_videos_features.pickle
 init_model: weight/univl.pretrained.bin
-output_dir: ckpts/ckpt_youcook_caption_univl_baseline
+output_dir: ckpts/ckpt_youcook_retrieval_pgl_sum
 
 do_train: True
 do_pretrain: False
 do_eval: False
 
-task_type: caption
+summ_type: pgl-sum
+task_type: retrieval
 epochs: 5
 batch_size: 2
 lr: 0.00005

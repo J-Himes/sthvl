@@ -6,6 +6,14 @@ from __future__ import print_function
 import numpy as np
 
 def compute_metrics(x):
+    print("Start of compute_metrics")
+    print(x)
+    x = np.asarray(x)
+    print(x.shape)
+    if (x.ndim == 1):
+        x = np.expand_dims(x, axis=0)
+        print(x.shape, "expanded x:")
+
     sx = np.sort(-x, axis=1)
     d = np.diag(-x)
     d = d[:, np.newaxis]

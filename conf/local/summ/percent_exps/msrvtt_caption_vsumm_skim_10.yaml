@@ -1,10 +1,10 @@
-datatype: youcook
-train_csv: data/youcookii/youcookii_train.csv
-val_csv: data/youcookii/youcookii_val.csv
-data_path: data/youcookii/youcookii_data.no_transcript.pickle
-features_path: data/youcookii/youcookii_videos_features.pickle
-init_model: weight/univl.pretrained.bin
-output_dir: ckpts/ckpt_youcook_caption_univl_baseline
+datatype: msrvtt
+train_csv: data/msrvtt/MSRVTT_train.9k.csv
+val_csv: data/msrvtt/MSRVTT_JSFUSION_test.csv
+data_path: data/msrvtt/MSRVTT_data.json
+features_path: data/msrvtt/summ/msrvtt_videos_features_vsumm_skim_10.pickle
+init_model: weights/weight/univl.pretrained.bin
+output_dir: ckpts/summ/ckpt_msrvtt_caption_vsumm_skim_10
 
 do_train: True
 do_pretrain: False
@@ -12,13 +12,13 @@ do_eval: False
 
 task_type: caption
 epochs: 5
-batch_size: 2
+batch_size: 128
 lr: 0.00005
 coef_lr: 0.1
 margin: 0.1
-max_words: 5
-max_frames: 5
-batch_size_val: 2
+max_words: 48
+max_frames: 48
+batch_size_val: 32
 video_dim: 1024
 feature_framerate: 1
 
@@ -37,7 +37,7 @@ n_pair: 1
 negative_weighting: 1
 hard_negative_rate: 0.5
 use_mil: True
-num_thread_reader: 4
+num_thread_reader: 16
 gradient_accumulation_steps: 1
 warmup_proportion: 0.1
 n_display: 100

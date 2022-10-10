@@ -131,7 +131,6 @@ def dataloader_youcook_train(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=args.summ_type
     )
 
     train_sampler = torch.utils.data.distributed.DistributedSampler(youcook_dataset)
@@ -156,7 +155,6 @@ def dataloader_youcook_test(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=None
     )
 
     test_sampler = SequentialSampler(youcook_testset)
@@ -205,7 +203,7 @@ def dataloader_msrvtt_test(args, tokenizer):
         feature_framerate=args.feature_framerate,
         tokenizer=tokenizer,
         max_frames=args.max_frames,
-        summ_type=None
+        summ_type = args.summ_type,
     )
     dataloader_msrvtt = DataLoader(
         msrvtt_testset,
@@ -309,6 +307,8 @@ def _run_on_single_gpu(model, batch_list_t, batch_list_v, batch_sequence_output_
 
 def eval_epoch(args, model, test_dataloader, device, n_gpu):
 
+#    print('Inside eval_epoch')
+
     if hasattr(model, 'module'):
         model = model.module.to(device)
     else:
@@ -321,6 +321,7 @@ def eval_epoch(args, model, test_dataloader, device, n_gpu):
         for bid, batch in enumerate(test_dataloader):
             batch = tuple(t.to(device) for t in batch)
 
+            print("Before model gets sequence_visual_output")
             input_ids, input_mask, segment_ids, video, video_mask, _, _, _, _ = batch
             sequence_output, visual_output = model.get_sequence_visual_output(input_ids, segment_ids, input_mask, video, video_mask)
 
@@ -366,9 +367,17 @@ def eval_epoch(args, model, test_dataloader, device, n_gpu):
                 sim_matrix += parallel_outputs[idx]
             sim_matrix = np.concatenate(tuple(sim_matrix), axis=0)
         else:
+            print("Sim matrix being computed on single GPU")
             sim_matrix = _run_on_single_gpu(model, batch_list, batch_list, batch_sequence_output_list, batch_visual_output_list)
+            print(type(sim_matrix))
+
+#   We added this to make sure it was a nd array so that we could use np.sort()
+#    sim_matrix = np.asarray(sim_matrix)
+
+    print("Before Computer_Metrics")
 
     metrics = compute_metrics(sim_matrix)
+    print("After compute_metrics")
     logger.info('\t Length-T: {}, Length-V:{}'.format(len(sim_matrix), len(sim_matrix[0])))
     logger.info('\t>>>  R@1: {:.4f} - R@5: {:.4f} - R@10: {:.4f} - Median R: {}'.
                 format(metrics['R1'], metrics['R5'], metrics['R10'], metrics['MR']))
@@ -401,6 +410,12 @@ def main():
         logger.info("  Num examples = %d", test_length)
         logger.info("  Batch size = %d", args.batch_size_val)
         logger.info("  Num steps = %d", len(test_dataloader))
+
+    # Modifications start here, remove later.
+
+#    args.do_train = False
+#    args.do_eval = True
+#    print('Set training eval flags')
 
     if args.do_train:
         train_dataloader, train_length, train_sampler = DATALOADER_DICT[args.datatype]["train"](args, tokenizer)
@@ -438,8 +453,10 @@ def main():
             model = load_model(-1, args, n_gpu, device, model_file=best_output_model_file)
             eval_epoch(args, model, test_dataloader, device, n_gpu)
     elif args.do_eval:
+#        print('Evaluating')
         if args.local_rank == 0:
             eval_epoch(args, model, test_dataloader, device, n_gpu)
+#            print('Done with eval')
 
 if __name__ == "__main__":
     main()
